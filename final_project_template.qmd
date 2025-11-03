@@ -14,7 +14,7 @@ Use this template to complete your project throughout the course. Your Final Pro
 
 ## Overview {#sec-overview}
 
-The goal of this project is to explore two popular methods for determining intensity thresholds for seasonal in Pennsylvania. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly ILI data at the state level. The overall purpose of this project is to apply the methods to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
+The goal of this project is to explore two popular methods for determining intensity thresholds for seasonal in Pennsylvania. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly influenza-like illness (ILI) data at the state level. The overall purpose of this project is to apply the methods to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
 
 [BMIN5030 Final Project GitHub Repository](https://github.com/HopeSch01/BMIN5030_Final_Project_Schreiber)
 
@@ -30,10 +30,146 @@ The CDC collaborates with state health departments and other clinical laboratori
 
 Describe the data used and general methodological approach used to address the problem described in the @sec-introduction. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why.
 
+The data utilized for this project is from the U.S. influenza surveillance system in collaboration with the CDC \[1\]. All data used in this project is at the state level, though FluView has data available at the regional and national level.
+
+In order to create seasonal influenza thresholds, data specifically from ILINet was utilized. This includes information on outpatients visits to health care providers for respiratory illness. This setting most closely aligns to that of Penn students, which is why it was chosen for this project.
+
+An ILI case is defined in this system as "a fever (temperature of 100°F \[37.8°C\] or greater) and a cough and/or sore throat. ILINet will capture any visit due to any respiratory pathogen that presents with this case definition.
+
+FluView includes other important surveillance data including age group distribution of positive influenza tests, hospitalizations, and mortality. These will also be explored to obtain a complete and accurate picture of ILI activity prior to establishing state level seasonal activity thresholds.
+
+#### Intro/background Exploration
+
+-   line graph of ILI cases by CDC week over the years
+
+    -   ILINet data
+
+-   map showing change in ILI activity?
+
+    -   would need to download data for all states from FluView
+
+-   Flu A versus Flu B
+
+-   Age group distributions
+
+    -   broken down by Flu A versus Flu B
+
+    -   broken down by CDC week
+
+-   hospitalizations
+
+    -   broken down by CDC week
+
+    -   broken down by age
+
+```{r}
+
+#loading necessary packages 
+library(tidyverse)
+library(readr)
+library(lubridate)
+library(broom)
+
+```
+
+```{r}
+
+#loading in PA ILINet data from 2014-2025
+ILINet <- read_csv("C:/Users/hopeh/Downloads/Fall 2025/EPID 6000 Data Science for Biomedical Informatics/Final Project/FluViewPhase2Data_USE/ILINet.csv")
+
+#keeping only relevant columns 
+ILINet <- ILINet |>
+  select("REGION TYPE", "REGION", "YEAR", "WEEK", "%UNWEIGHTED ILI", "ILITOTAL", "TOTAL PATIENTS" )
+
+#checking if there are any missing values 
+any(is.na(ILINet)) #no missing
+
+
+```
+
 ## Results {#sec-results}
 
 Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
 
+#### 1) Establishing thresholds using WHO method
+
+The WHO method for defining thresholds was developed in 2012 with the purpose of developing global standards for influenza surveillance \[3\]. It depends on historical data, and aligns previous years on the median week of peak activity. Then thresholds are assigned based on means and standard deviations of the aligned data. The paper by Tay et al. was used as a guide in applying this method to the ILINet data in Pennsylvania.
+
+According to the CDC, the "peak" months of influenza season are October through May [7]. We will use this timeline to create our influenza seasons. 
+
+```{r}
+
+### Step 1. Establishing Flu Seasons ###
+
+#Creating a flu season variable
+ILINet_clean <- ILINet |>
+  mutate(
+    flu.season = case_when(
+      WEEK >= 40 ~ paste0(YEAR, "/", substr(YEAR + 1, 3, 4)), #Oct-Dec belong to season starting that year
+      WEEK <= 20 ~ paste0(YEAR - 1, "/", substr(YEAR, 3, 4)), #Jan-May belong to to season that started previous year 
+      TRUE ~ NA_character_                                    #Weeks 21-39 are not in the typical flu season
+    )
+  )
+
+#Creating a variable for "week in flu season" - this will help with plotting later 
+ILINet_clean <- ILINet_clean |>
+  mutate (
+    week.in.season = case_when(
+      WEEK >= 40 ~ WEEK - 39,  #Weeks 40-52 become 1-13 of "flu season"
+      WEEK <= 20 ~ WEEK + 13,  #Weeks 1-20 become 14-33 of "flu season"
+      TRUE ~ NA_real_
+    )
+  )
+
+
+#Filtering ILINet_clean to only include flu season weeks 
+ILINet_clean <- ILINet_clean |>
+  filter(!is.na(flu.season)) |>
+  arrange(flu.season, week.in.season)
+
+#View summary 
+summary(ILINet_clean)
+
+```
+With the years available on ILINet, seasons 2014/15 through 2023/24 can be used to establish thresholds, and these will be validated on season 2024/25. 
+
+```{r}
+
+### Step 2. Creating Validation Year ###
+baseline.seasons <- ILINet_clean |>
+  filter(flu.season %in% c("2014/15", "2015/16", "2016/17", "2017/18", 
+                       "2018/19", "2019/20", "2020/21", "2021/22", 
+                       "2022/23", "2023/24"))
+
+validation.season <- ILINet_clean |>
+  filter(flu.season == "2024/25") 
+
+```
+
+-   code used to establish thresholds w/ explanation
+
+-   graph of each year
+
+2\) Establishing thresholds using MEM method
+
+-   mem package code used
+
+-   graph of each year
+
+3\) Some type of sensitivity analysis of two methods
+
+-   don't necessarily have reference data
+
 ## Conclusion
 
 This the conclusion. The @sec-results can be invoked here.
+
+## References
+
+1.  CDC. U.S. Influenza Surveillance: Purpose and Methods. FluView. March 3, 2025. Accessed October 29, 2025. https://www.cdc.gov/fluview/overview/index.html
+2.  CDC. How CDC Classifies Flu Severity each Season in the United States. Influenza (Flu). November 26, 2024. Accessed October 28, 2025. https://www.cdc.gov/flu/php/surveillance/index.html
+3.  Tay EL, Grant K, Kirk M, Mounts A, Kelly H. Exploring a Proposed WHO Method to Determine Thresholds for Seasonal Influenza Surveillance. Cook AR, ed. *PLoS ONE*. 2013;8(10):e77244. doi:10.1371/journal.pone.0077244
+4.  *Global Epidemiological Surveillance Standards for Influenza*. World Health Organization; 2013.
+5.  Vega T, Lozano JE, Meerhoff T, et al. Influenza surveillance in Europe: establishing epidemic thresholds by the moving epidemic method. *Influenza Other Respir Viruses*. 2013;7(4):546-558. doi:10.1111/j.1750-2659.2012.00422.x
+6.  Lozano JE. mem: The Moving Epidemic Method. Published online November 26, 2010:2.19. doi:10.32614/CRAN.package.mem
+7. CDC. Flu Season. Influenza (Flu). September 26, 2025. Accessed November 3, 2025. https://www.cdc.gov/flu/about/season.html
