@@ -69,6 +69,8 @@ library(tidyverse)
 library(readr)
 library(lubridate)
 library(broom)
+library(zoo)
+library(ggplot2)
 
 ```
 
@@ -80,6 +82,9 @@ ILINet <- read_csv("C:/Users/hopeh/Downloads/Fall 2025/EPID 6000 Data Science fo
 #keeping only relevant columns 
 ILINet <- ILINet |>
   select("REGION TYPE", "REGION", "YEAR", "WEEK", "%UNWEIGHTED ILI", "ILITOTAL", "TOTAL PATIENTS" )
+
+#renaming for clarity 
+names(ILINet)[names(ILINet) == "%UNWEIGHTED ILI"] <- "percent.ili"
 
 #checking if there are any missing values 
 any(is.na(ILINet)) #no missing
@@ -93,7 +98,7 @@ Describe your results and include relevant tables, plots, and code/comments used
 
 #### 1) Establishing thresholds using WHO method
 
-The WHO method for defining thresholds was developed in 2012 with the purpose of developing global standards for influenza surveillance \[3\]. It depends on historical data, and aligns previous years on the median week of peak activity. Then thresholds are assigned based on means and standard deviations of the aligned data. The paper by Tay et al. was used as a guide in applying this method to the ILINet data in Pennsylvania.
+The WHO method for defining thresholds was established in 2012 with the purpose of developing global standards for influenza surveillance \[3\]. It depends on historical data, and aligns previous years on the median week of peak activity. Then thresholds are assigned based on means and standard deviations of the aligned data. The paper by Tay et al. was used as a guide in applying this method to the ILINet data in Pennsylvania.
 
 According to the CDC, the "peak" months of influenza season are October through May \[7\]. We will use this timeline to create our influenza seasons.
 
@@ -147,6 +152,73 @@ validation.season <- ILINet_clean |>
 
 ```
 
+The WHO method requires identifying epidemic weeks to exclude them from baseline \[3\]. If we include epidemic weeks in our baseline, we would inflate the mean and standard deviation, creating thresholds that are too high. There are multiple ways to do this, with the simplest being a visual inspection of potential epidemic periods using a line graph. A more robust approach is 
+the within-season percentile method. This will identify epidemic weeks as those are are unusually high relative to other weeks in the same season. Additionally, a moving average will be used to smooth data and reduce noise \[8\].
+
+```{r}
+
+### Step 3. Identifying Epidemic Periods ###
+
+epidemic.periods <- function(ILINet_clean, percentile = 0.90) {
+  percentile.data <- ILINet_clean |>
+    arrange(flu.season, week.in.season) |>
+    group_by(flu.season) |>
+    mutate(
+      #calculating season-specific percentile thresholds
+      season.threshold = quantile(percent.ili, probs = percentile, na.rm = TRUE),
+      #Weeks above this threshold are considered epidemic weeks 
+      above.thresh = percent.ili >= season.threshold,
+      #Using moving average to smooth
+      ma_3weeks = zoo::rollmean(percent.ili, k = 3, fill = NA, align = "center"), 
+      #Identifying peak week in each season
+      peak.week = percent.ili == max(percent.ili, na.rm = TRUE) )|>
+        ungroup()
+  
+  #Create a summary for each season        
+  epidemic.summary <- percentile.data |>
+    group_by(flu.season) |>
+    summarise(
+      total.weeks = n(),
+      epidemic.weeks = sum(above.thresh, na.rm = TRUE),
+      percent.epidemic = round(100*epidemic.weeks / total.weeks, 1),
+      peak.ili = max(percent.ili, na.rm = TRUE),
+      peak.week = week.in.season[which.max(percent.ili)]
+    )
+  
+  return(list(ILINet_clean = percentile.data, summary = epidemic.summary))
+}
+  
+#Next, apply this within-season percentile method to our baseline seasons 
+within.season.percent <- epidemic.periods(baseline.seasons, percentile = 0.90)
+
+print(within.season.percent$summary)
+
+
+############# MAKE THIS CLEANER ##############
+##############################################
+# Visualize identified epidemic periods
+ggplot(within.season.percent$ILINet_clean, aes(x = week.in.season, y = percent.ili)) +
+  geom_line(aes(group = flu.season), color = "gray60") +
+  geom_point(aes(color = above.thresh), size = 2) +
+  geom_point(data = filter(within.season.percent$ILINet_clean, peak.week), 
+             color = "red", size = 4, shape = 17) + #Triangle for peak
+  facet_wrap(~flu.season, scales = "free_y") +
+  scale_color_manual(
+    values = c("FALSE" = "blue", "TRUE" = "orange"),
+    labels = c("Non-epidemic", "Epidemic")
+  ) +
+  theme_minimal() +
+  labs(
+    title = "Epidemic Period Identification (Within-Season 90th Percentile)",
+    subtitle = "Red triangles indicate season peaks",
+    x = "Week in Season",
+    y = "Percent ILI (%)",
+    color = "Classification"
+  ) +
+  theme(legend.position = "bottom")
+
+```
+
 -   code used to establish thresholds w/ explanation
 
 -   graph of each year
@@ -174,3 +246,4 @@ This the conclusion. The @sec-results can be invoked here.
 5.  Vega T, Lozano JE, Meerhoff T, et al. Influenza surveillance in Europe: establishing epidemic thresholds by the moving epidemic method. *Influenza Other Respir Viruses*. 2013;7(4):546-558. doi:10.1111/j.1750-2659.2012.00422.x
 6.  Lozano JE. mem: The Moving Epidemic Method. Published online November 26, 2010:2.19. doi:10.32614/CRAN.package.mem
 7.  CDC. Flu Season. Influenza (Flu). September 26, 2025. Accessed November 3, 2025. https://www.cdc.gov/flu/about/season.html
+8.  Steiner SH, Grant K, Coory M, Kelly HA. Detecting the start of an influenza outbreak using exponentially weighted moving average charts. *BMC Med Inform Decis Mak*. 2010;10(1):37. doi:10.1186/1472-6947-10-37
