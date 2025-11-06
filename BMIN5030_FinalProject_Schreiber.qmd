@@ -104,7 +104,7 @@ According to the CDC, the "peak" months of influenza season are October through 
 
 ```{r}
 
-### Step 1. Establishing Flu Seasons ###
+### Step 1. Establishing Flu Seasons 
 
 #Creating a flu season variable
 ILINet_clean <- ILINet |>
@@ -141,7 +141,7 @@ With the years available on ILINet, seasons 2014/15 through 2023/24 can be used 
 
 ```{r}
 
-### Step 2. Creating Validation Year ###
+### Step 2. Creating Validation Year
 baseline.seasons <- ILINet_clean |>
   filter(flu.season %in% c("2014/15", "2015/16", "2016/17", "2017/18", 
                        "2018/19", "2019/20", "2020/21", "2021/22", 
@@ -157,7 +157,7 @@ the within-season percentile method. This will identify epidemic weeks as those 
 
 ```{r}
 
-### Step 3. Identifying Epidemic Periods ###
+### Step 3. Identifying Epidemic Periods 
 
 epidemic.periods <- function(ILINet_clean, percentile = 0.90) {
   percentile.data <- ILINet_clean |>
@@ -218,6 +218,67 @@ ggplot(within.season.percent$ILINet_clean, aes(x = week.in.season, y = percent.i
   theme(legend.position = "bottom")
 
 ```
+Now, with "epidemic" weeks established, we can move on to exploring baseline (non-epidemic) activity. 
+
+```{r}
+
+### Step 4: Calculating Baseline Activity 
+
+baseline.activity <- within.season.percent$ILINet_clean |>
+  filter(!above.thresh) |>   #exclude weeks above 90th percentile in each season
+  summarise(
+    baseline.mean = mean(percent.ili, na.rm = TRUE),  #calculate mean of baseline weeks
+    baseline.sd = sd(percent.ili, na.rm = TRUE),      #calculate standard dev. of baseline weeks
+    n.weeks = n()
+  )
+
+
+```
+
+The WHO method defined three levels of flu thresholds: seasonal, average, and alert [3]. When the seasonal threshold is crossed into, this signals the start of flu season. We will define the seasonal threshold as mean + 2 SD (95th percentile), and the alert threshold as mean + 3 SD (99.7th percentile). Tay et al. explains that there is not a mandated approach to choosing these threshold definitions.
+
+```{r}
+
+### Step 5. Calculate WHO Thresholds
+
+thresholds <- baseline.activity |>
+  mutate(
+    average.threshold = baseline.mean + (2 * baseline.sd),
+    alert.threshold = baseline.mean + (3 * baseline.sd)
+  )
+
+print(thresholds)
+
+```
+Based on our historical flu season data (2014/15 through 2023/24), the seasonal threshold is 3.6% and the alert threshold is 4.5%. Note - these percentages represent the percent of outpatient medical visits associated with an ILI diagnosis in Pennsylvania. 
+
+```{r}
+
+### Visualize WHO Method Results 
+
+#Applying thresholds to current flu season (2024/25)
+if(nrow(validation.season) > 0) {
+  current.flu.season <- ggplot() +
+    #Current season (2024/25) data
+    geom_line(
+      data = validation.season,
+      aes(x = week.in.season, y = percent.ili, group = flu.season),
+      color = "black",
+      alpha = 0.5
+    ) +
+    #Adding each threshold line individually
+    geom_hline(yintercept = thresholds$baseline.mean, color = "blue", linetype = "dashed", size = 1) +
+    geom_hline(yintercept = thresholds$average.threshold, color = "orange", linetype = "dashed", size = 1) +
+    geom_hline(yintercept = thresholds$alert.threshold, color = "red", linetype = "dashed", size = 1)
+}
+
+print(current.flu.season)
+
+
+###Still need to make this cleaner###
+#For context - blue line is basically mean activity (seasonal threshold); orange line is average threshold, red line is alert threshold
+```
+
 
 -   code used to establish thresholds w/ explanation
 
