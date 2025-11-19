@@ -65,7 +65,7 @@ FluView includes other important surveillance data including age group distribut
 ```{r}
 
 #installing package for MEM method 
-install.packages("mem")
+install.packages("mem", repos = "https://cloud.r-project.org")
 
 #loading necessary packages 
 library(tidyverse)
