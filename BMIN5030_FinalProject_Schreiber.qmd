@@ -14,7 +14,7 @@ Use this template to complete your project throughout the course. Your Final Pro
 
 ## Overview {#sec-overview}
 
-The goal of this project is to explore two popular methods for determining intensity thresholds for seasonal in Pennsylvania. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly influenza-like illness (ILI) data at the state level. The overall purpose of this project is to apply the methods to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
+The goal of this project is to explore two popular methods for determining intensity thresholds for seasonal influenza in Pennsylvania. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly influenza-like illness (ILI) data at the state level. The overall purpose of this project is to apply the methods to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
 
 [BMIN5030 Final Project GitHub Repository](https://github.com/HopeSch01/BMIN5030_Final_Project_Schreiber)
 
@@ -142,6 +142,7 @@ summary(ILINet_clean)
 
 
 ```
+
 ```{r}
 
 #Establishing Influenza Seasons for MEM
@@ -181,6 +182,7 @@ ILINet_clean_mem <- ILINet |>
 summary(ILINet_clean)
 
 ```
+
 With the years available on ILINet, seasons 2014/15 through 2023/24 can be used to establish thresholds, and these will be validated on season 2024/25.
 
 ```{r}
@@ -406,11 +408,12 @@ Now, we will run the MEM model. The majority of the MEM analysis uses the "memmo
 #Here we are running the MEM model with default parameters 
 mem_results <- memmodel(
   i.data = mem_data,        #input data for the model     
-  i.type.threshold = 1,      #option 1 = arithmetic mean and SDs
-  i.tails.threshold = 0.95,  #uses 95th percentile of historical epidemic activity to set the threshold
-  i.type.intensity = 6,      #option 6 = geometric mean and SDs
-  i.level.intensity = c(0.40, 0.90, 0.975), 
-  #low intensity = below 40th percentile 
+  i.type.threshold = 1,     #calculating pre- and post- epidemic thresholds; option 1 is arithmetic mean 
+  i.level.threshold = 0.95,
+  i.tails.threshold = 1,  #uses 95th percentile of historical epidemic activity to set the threshold
+  i.type.intensity = 6,      #calculating how severe an ongoing flu season is; option 6 = geometric mean and SDs
+  i.level.intensity = c(0.50, 0.90, 0.975), 
+  #low intensity = below 50thth percentile 
   #medium intensity = 40th-90th percentile 
   #high intensity = 90th-97.5th percentile
   #very high intensity = above 97.5th percentile 
@@ -418,9 +421,9 @@ mem_results <- memmodel(
   i.type.curve = 2,          #normal curve
   i.level.curve = 0.95,      #significance level for the epidemic curve fit
   i.method = 1,              #estimation method for the epidemic threshold calculation = arithmetic/normal 
-  i.param = 2.8,             #controls shape or spread of epidemic curve
+  i.param = 2.5,             #controls shape or spread of epidemic curve
   i.n.max = -1,              #consider all weeks  
-  i.type.boot = "norm",      #bootstrap distribution used to estimate CIs for thresholds and intesnities = normal
+  i.type.boot = "norm",      #bootstrap distribution used to estimate CIs for thresholds and intensities = normal
   i.iter.boot = 10000        #10,000 bootstrap iterations 
 )
 
@@ -430,15 +433,13 @@ mem_results
 
 mem_thresholds <- data.frame(
   threshold_type = c(
-    "Pre-epidemic Threshold",
-    "Post-epidemic Threshold",
-    "Medium Intensity (40%)",
+    "Epidemic Threshold",
+    "Medium Intensity (50%)",
     "High Intensity (90%)",
     "Very High Intensity (97.5%)"
   ),
   value = c(
-    mem_results$epidemic.thresholds[1],  # Pre-epidemic
-    mem_results$epidemic.thresholds[2],  # Post-epidemic
+    mem_results$epidemic.thresholds[1],  # Epidemic Threshold
     mem_results$intensity.thresholds[1], # Medium
     mem_results$intensity.thresholds[2], # High
     mem_results$intensity.thresholds[3]  # Very High
@@ -447,12 +448,261 @@ mem_thresholds <- data.frame(
 
 mem_thresholds
 
+
 ```
 
-Vega et al. (2013) recommends using the geometric mean to calculate thresholds because epidemic peaks are inherently skewed. Since here we are working with state level data, our percent ILI values are smaller. The geometric mean is sensitive to values near zero - which is why in this project the arithmetic mean was used instead.
+Vega et al. (2013) recommends using the geometric mean to calculate thresholds and intensities because epidemic peaks are inherently skewed. Here, a hybrid approach was used. The pre-epidemic thre
 
-The mem model above provides a pre- and post- epidemic threshold, as well as three epidemic thresholds. These percentages correspond to the percent of medical visits related to ILI diagnosis in any given week.
+Since here we are working with state level data, our percent ILI values are smaller. The geometric mean is sensitive to values near zero - which is why in this project the arithmetic mean was used for the epidemic threshold and the geometric mean was used for intensities. 
 
+When setting the intensity percentiles, we are telling the model to calculate the values based on those percentiles from our historical data. 
+
+For example, for the medium intensity, the model is looking at the epidemic peaks from the 9 historical seasons provided and calculating the 50th percentile of those peaks. 
+
+The mem model above provides an epidemic threshold, as well as three epidemic intensities. These percentages correspond to the percent of medical visits related to ILI diagnosis in any given week.
+
+-   Epidemic Threshold: 2.06%
+
+-   Medium Intensity: 2.45%
+
+-   High Intensity: 4.17%
+
+-   Very High Intensity: 5.50%
+
+```{r}
+
+###Step 3: Extracting Epidemic Timing 
+pre_epidemic_threshold <- mem_thresholds$value[1]
+
+
+epidemic_timing <- mem_data |>
+  as.data.frame() |>
+  mutate(season = rownames(mem_data)) |>
+  pivot_longer(
+    cols = starts_with("week_"),
+    names_to = "cdc_week",
+    values_to = "percent_ili",
+    names_prefix = "week_"
+  ) |>
+  mutate(
+    cdc_week = as.numeric(cdc_week),
+    above_threshold = percent_ili >= pre_epidemic_threshold 
+  ) |>
+  group_by(season) |>
+  summarise(
+    #Epidemic start: first week above threshold 
+    epidemic_start_cdc = ifelse(any(above_threshold), 
+                               first(cdc_week[above_threshold]), 
+                               NA),
+    #Epidemic end: last consecutive week above threshold
+     epidemic_end_cdc = ifelse(any(above_threshold), 
+                             last(cdc_week[above_threshold]), 
+                             NA),
+    #Peak week and value
+    peak_week_cdc = cdc_week[which.max(percent_ili)],
+    peak_value = max(percent_ili, na.rm = TRUE),
+    #Count weeks above threshold
+    weeks_above_threshold = sum(above_threshold, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+  #Calculate duration (from first to last week above threshold)
+  epidemic_duration = epidemic_end_cdc - epidemic_start_cdc + 1)
+
+
+#Table for epidemic timing
+epidemic_timing_table <- epidemic_timing |>
+  select(
+    Season = season,
+    `Start (CDC Week)` = epidemic_start_cdc,
+    `End (CDC Week)` = epidemic_end_cdc,
+    `Duration (weeks)` = epidemic_duration,
+    `Peak (CDC Week)` = peak_week_cdc,
+    `Peak ILI (%)` = peak_value
+  ) |>
+  mutate(`Peak ILI (%)` = round(`Peak ILI (%)`, 2))
+
+epidemic_timing_table
+
+
+```
+
+
+```{r}
+
+###Step 4: Visualizing MEM Results
+
+#Using built-in MEM plot
+png("mem_model_plot.png", width = 12, height = 8, units = "in", res = 300)
+plot(mem_results, main = "Pennsylvania Influenza Surveillance - MEM")
+
+
+#Creating more custom visualizations
+#reshaping data for plotting 
+mem_data_long <- ILINet_clean_mem |>
+  filter(flu.season %in% rownames(mem_data)) |>
+  mutate(
+    above_threshold = percent.ili >= mem_thresholds$value[1]
+  ) |>
+  # Join with epidemic timing to classify periods
+  left_join(
+    epidemic_timing |>
+      select(season = season, epidemic_start_cdc, epidemic_end_cdc),
+    by = c("flu.season" = "season")
+  ) |>
+  mutate(
+    period = case_when(
+      WEEK < epidemic_start_cdc ~ "Pre-epidemic",
+      WEEK >= epidemic_start_cdc & WEEK <= epidemic_end_cdc ~ "Epidemic",
+      WEEK > epidemic_end_cdc ~ "Post-epidemic",
+      TRUE ~ "Unknown"
+    ),
+    period = factor(period, levels = c("Pre-epidemic", "Epidemic", "Post-epidemic"))
+  )
+
+##Plot 1: All Seasons With Thresholds##
+plot_mem_all_seasons <- ggplot(mem_data_long, 
+                               aes(x = WEEK, y = percent.ili)) +
+  geom_line(aes(group = flu.season), color = "gray70", alpha = 0.5) +
+  geom_point(aes(color = period), size = 1.5, alpha = 0.6) +
+  
+  # Add threshold lines
+  geom_hline(yintercept = mem_thresholds$value[1], 
+             color = "blue", linetype = "dashed", size = 1) +
+  geom_hline(yintercept = mem_thresholds$value[3], 
+             color = "yellow3", size = 0.8) +
+  geom_hline(yintercept = mem_thresholds$value[4], 
+             color = "orange", size = 0.8) +
+  geom_hline(yintercept = mem_thresholds$value[5], 
+             color = "red", size = 0.8) +
+  
+  # Add labels
+  annotate("text", x = 30, 
+           y = mem_thresholds$value[1],
+           label = paste0("Pre-epidemic: ", round(mem_thresholds$value[1], 2), "%"),
+           vjust = -0.5, color = "blue", size = 3) +
+  annotate("text", x = 30,
+           y = mem_thresholds$value[3],
+           label = paste0("Medium: ", round(mem_thresholds$value[3], 2), "%"),
+           vjust = -0.5, color = "yellow4", size = 3) +
+  annotate("text", x = 30,
+           y = mem_thresholds$value[4],
+           label = paste0("High: ", round(mem_thresholds$value[4], 2), "%"),
+           vjust = -0.5, color = "orange", size = 3) +
+  annotate("text", x = 30,
+           y = mem_thresholds$value[5],
+           label = paste0("Very High: ", round(mem_thresholds$value[5], 2), "%"),
+           vjust = -0.5, color = "red", size = 3) +
+  
+  scale_color_manual(
+    values = c("Pre-epidemic" = "steelblue", 
+               "Epidemic" = "coral", 
+               "Post-epidemic" = "lightblue")
+  ) +
+  
+  theme_minimal() +
+  labs(
+    title = "Pennsylvania Influenza Thresholds - MEM Method",
+    subtitle = paste0("Based on ", length(unique(mem_data_long$flu.season)), " seasons"),
+    x = "Week in Season (Week 1 = CDC Week 40)",
+    y = "Percent ILI (%)",
+    color = "Epidemic Period"
+  ) +
+  theme(legend.position = "bottom")
+
+print(plot_mem_all_seasons)
+
+```
+
+
+```{r}
+
+ ###Step 5: Applying MEM Thresholds to the Current Season
+
+#Classify each week to a threshold
+classification <- validation.season |>
+  mutate(
+    intensity_level = case_when(
+      percent.ili < mem_thresholds$value[1] ~ "Below Threshold",
+      percent.ili < mem_thresholds$value[3] ~ "Baseline",
+      percent.ili < mem_thresholds$value[4] ~ "Medium",
+      percent.ili < mem_thresholds$value[5] ~ "High",
+      percent.ili >= mem_thresholds$value[5] ~ "Very High",
+      TRUE ~ "Unknown"
+    ),
+    intensity_level = factor(
+      intensity_level,
+      levels = c("Below Threshold", "Baseline", "Medium", "High", "Very High")
+    ),
+    above_epidemic_threshold = percent.ili >= mem_thresholds$value[1]
+  )
+
+#Find epidemic alert
+first_alert <- classification |>
+  filter(above_epidemic_threshold) |>
+  slice(1)
+
+## Plot 2. Season 2024/25 With MEM Thresholds
+plot_season_2024_2025 <- ggplot(classification, 
+                           aes(x = week.in.season, y = percent.ili)) +
+  # Shaded regions for intensity levels
+  annotate("rect", xmin = -Inf, xmax = Inf,
+           ymin = 0, ymax = mem_thresholds$value[1],
+           fill = "lightblue", alpha = 0.2) +
+  annotate("rect", xmin = -Inf, xmax = Inf,
+           ymin = mem_thresholds$value[1], ymax = mem_thresholds$value[3],
+           fill = "lightgreen", alpha = 0.2) +
+  annotate("rect", xmin = -Inf, xmax = Inf,
+           ymin = mem_thresholds$value[3], ymax = mem_thresholds$value[4],
+           fill = "yellow", alpha = 0.2) +
+  annotate("rect", xmin = -Inf, xmax = Inf,
+           ymin = mem_thresholds$value[4], ymax = mem_thresholds$value[5],
+           fill = "orange", alpha = 0.2) +
+  annotate("rect", xmin = -Inf, xmax = Inf,
+           ymin = mem_thresholds$value[5], ymax = Inf,
+           fill = "red", alpha = 0.2) +
+  
+  #Current season data
+  geom_line(color = "black", size = 1.2) +
+  geom_point(aes(color = intensity_level), size = 4) +
+  
+  #Add text labels with CDC week
+  geom_text(aes(label = paste0("W", WEEK)), 
+            vjust = -1, size = 2.5, color = "gray30") +
+  
+  #Threshold lines
+  geom_hline(yintercept = mem_thresholds$value[1], 
+             color = "blue", linetype = "solid", size = 1) +
+  geom_hline(yintercept = mem_thresholds$value[3], 
+             color = "yellow3", linetype = "dashed") +
+  geom_hline(yintercept = mem_thresholds$value[4], 
+             color = "orange", linetype = "dashed") +
+  geom_hline(yintercept = mem_thresholds$value[5], 
+             color = "red", linetype = "dashed") +
+  scale_color_manual(
+    values = c(
+      "Below Threshold" = "steelblue",
+      "Baseline" = "green4",
+      "Medium" = "yellow3",
+      "High" = "orange",
+      "Very High" = "red"
+    )
+  ) +
+  
+  theme_minimal() +
+  labs(
+    title = "2024/25 Pennsylvania Influenza Season - MEM",
+    subtitle = paste0("Epidemic threshold: ", round(mem_thresholds$value[1], 2), "% ILI"),
+    x = "Week in Season (Week 1 = CDC Week 40)",
+    y = "Percent ILI (%)",
+    color = "Intensity Level",
+    caption = "Labels show CDC week numbers"
+  ) +
+  theme(legend.position = "bottom")
+
+print(plot_season_2024_2025)
+
+```
 
 
 3\) Some type of sensitivity analysis of two methods
