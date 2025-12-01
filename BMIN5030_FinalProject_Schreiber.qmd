@@ -148,66 +148,6 @@ ILINet_AllStates_clean <- ILINet_AllStates |>
 
 ```
 
-```{r}
-
-#Loading Regional Hospitalization Data 
-FluSurv_Hospitalizations <- read_csv("C:/Users/hopeh/Downloads/Fall 2025/EPID 6000 Data Science for Biomedical Informatics/Final Project/BMIN5030_Final_Project_Schreiber/FluSurveillance_Hospitalizations.csv")
-
-#renaming for clarity 
-names(FluSurv_Hospitalizations)[names(FluSurv_Hospitalizations) == "YEAR...3"] <- "flu.season"
-
-names(FluSurv_Hospitalizations)[names(FluSurv_Hospitalizations) == "YEAR...4"] <- "YEAR"
-
-#Cleaning Data 
-FluSurv_Hospitalizations_clean <- FluSurv_Hospitalizations |> 
-  filter(!is.na(flu.season)) |>
-  mutate(
-    CUMULATIVE_RATE = as.numeric(`CUMULATIVE RATE`),
-    WEEKLY_RATE = as.numeric(`WEEKLY RATE`),
-    AGE_ADJ_CUM_RATE = as.numeric(`AGE ADJUSTED CUMULATIVE RATE`),
-    AGE_ADJ_WEEKLY_RATE = as.numeric(`AGE ADJUSTED WEEKLY RATE`),
-    #Clean up other columns
-    flu.season = as.factor(flu.season),
-    YEAR = as.numeric(YEAR),
-    WEEK = as.factor(WEEK),
-    AGE_CATEGORY = `AGE CATEGORY`,
-    SEX_CATEGORY = `SEX CATEGORY`,
-    RACE_CATEGORY = `RACE CATEGORY`,
-    VIRUS_TYPE = `VIRUS TYPE CATEGORY`
-  ) |>
-  #Remove rows where all rate columns are NA
-  filter(!is.na(CUMULATIVE_RATE) | !is.na(WEEKLY_RATE))
-
-#re-ordering CDC weeks for plot clarity 
-FluSurv_Hospitalizations_clean$WEEK <- factor(FluSurv_Hospitalizations_clean$WEEK, levels = c(40:53, 1:20))
-
-#Filtering patterns for variables 
-
-#Age
-age_data <- ILINet_Hospitalizations_clean |>
-  filter(!is.na(AGE_CATEGORY)) |>
-  filter(!AGE_CATEGORY %in% c("0-< 1yr", "0-4 yr", "< 18", ">= 18", ">= 65 yr", ">= 75", "Overall"))
-
-#Sex
-sex_data <- ILINet_Hospitalizations_clean |>
-  filter(!is.na(SEX_CATEGORY)) |>
-  filter(!is.na(SEX_CATEGORY) & SEX_CATEGORY != "Overall")
-
-#Race
-race_data <- ILINet_Hospitalizations_clean |>
-  filter(!is.na(RACE_CATEGORY)) |>
-  filter(!is.na(RACE_CATEGORY) & RACE_CATEGORY != "Overall")
-
-#Influenza Type 
-virus_data <- ILINet_Hospitalizations_clean |>
-  filter(!is.na(VIRUS_TYPE) & 
-         VIRUS_TYPE != "Overall" & 
-         VIRUS_TYPE != "A(H1N1)pdm09" & 
-         VIRUS_TYPE != "A(H3N2)")
-```
-
-This data consists of regional influenza hospitalization rates (per 100,000 population) for the FluSurv-NET Network. This network is part of the Influenza division of the CDC.
-
 #### Overview of Data
 
 ```{r}
@@ -217,16 +157,10 @@ head(ILINet_clean)
 dim(ILINet_clean)
 glimpse(ILINet_clean)
 
-##FluSurv-NET Data
-head(FluSurv_Hospitalizations_clean)
-dim(FluSurv_Hospitalizations_clean)
-glimpse(FluSurv_Hospitalizations_clean)
-
 ```
 
 The ILINet_clean dataframe has 9 variables and 520 rows of data. In this project, the variables primarily utilized will be WEEK, percent.ILI, flu.season, and week.in.season. The WEEK variable corresponds to CDC week. A typical flu season starts around CDC week 40, and ends around CDC week 20. This is why we re-ordered this variable earlier. We want to view figures starting at CDC week 40. The percent.ili variable provides the percent of medical visits related to an ILI diagnoses during any given week. It is the ILITOTAL variable divided by the TOTAL PATIENTS variable. We will define our flu thresholds and intensity levels using percent.ili.
 
-The FluSurv_Hospitalizations\>clean dataframe has 21 variables and 23,683 rows of data.
 
 ## Results {#sec-results}
 
@@ -332,346 +266,7 @@ ggplot(ILI_map_data) +
   )
 
 ```
-This figure shows the change in percent ILI from 2014/15 to 2024/25. There does not appear to be any strong geographic trends in change in percent ILI. For PA specifically, we see very little change. States along the western coast appear to have a greater change in percent ILI, as well as many states in the southeast. 
-
-
-### Exploring Regional Influenza Hospitalization Trends
-
-```{r}
-
-#Summary statistics by flu season 
-
-year_summary <- ILINet_Hospitalizations_clean |>
-  group_by(flu.season) |>
-  summarise(
-    n_obs = n(),
-    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
-    median_rate = median(CUMULATIVE_RATE, na.rm = TRUE),
-    sd_rate = sd(CUMULATIVE_RATE, na.rm = TRUE),
-    min_rate = min(CUMULATIVE_RATE, na.rm = TRUE),
-    max_rate = max(CUMULATIVE_RATE, na.rm = TRUE),
-    q25_rate = quantile(CUMULATIVE_RATE, 0.25, na.rm = TRUE),
-    q75_rate = quantile(CUMULATIVE_RATE, 0.75, na.rm = TRUE),
-    na_count = sum(is.na(CUMULATIVE_RATE))
-  ) |>
-  arrange(flu.season)
-
-year_summary
-```
-
-```{r}
-
-#Summary statistics by age category
-
-age_summary <- ILINet_Hospitalizations_clean |>
-  group_by(AGE_CATEGORY) |>
-  summarise(
-    n_obs = n(),
-    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
-    median_rate = median(CUMULATIVE_RATE, na.rm = TRUE),
-    sd_rate = sd(CUMULATIVE_RATE, na.rm = TRUE),
-    min_rate = min(CUMULATIVE_RATE, na.rm = TRUE),
-    max_rate = max(CUMULATIVE_RATE, na.rm = TRUE),
-    q25_rate = quantile(CUMULATIVE_RATE, 0.25, na.rm = TRUE),
-    q75_rate = quantile(CUMULATIVE_RATE, 0.75, na.rm = TRUE),
-    na_count = sum(is.na(CUMULATIVE_RATE))
-  )|>
-  arrange(desc(mean_rate))
-
-print(age_summary)
-
-
-
-```
-
-```{r}
-
-#Rates over time by flu season 
-
-#calculating weekly rates by flu season 
-weekly_rates <- ILINet_Hospitalizations_clean |>
-  group_by(flu.season, WEEK) |>
-  summarise(
-    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
-    median_rate = median(CUMULATIVE_RATE, na.rm = TRUE),
-    .groups = 'drop'
-  ) |>
-  filter(!is.na(mean_rate) & !is.infinite(mean_rate))
-
-#Time series of hospitalization rates by flu season
-hosp_flu_season <- ggplot(weekly_rates, aes(x = WEEK, y = mean_rate, color = flu.season, group = flu.season)) +
-  geom_line(linewidth = 1) +
-  geom_point(size = 1.5, alpha = 0.6) +
-  labs(
-    title = "Influenza Hospitalization Rates Over Time by Flu Season",
-    subtitle = "Mean cumulative rate by week",
-    x = "Week",
-    y = "Mean Cumulative Rate (per 100,000)",
-    color = "Flu Season"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    legend.position = "right",
-    plot.title = element_text(face = "bold", size = 14),
-    panel.grid.minor = element_blank(),
-    legend.key.size = unit(0.5, "cm")
-  ) +
-  scale_color_viridis_d(option = "turbo")
-
-hosp_flu_season
-
-```
-
-```{r}
-
-#Rates over time by age category 
-
-#Calculate rates by age category and week (across all seasons)
-age_weekly_rates <- age_data |>
-  group_by(AGE_CATEGORY, WEEK) |>
-  summarise(
-    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
-    .groups = 'drop'
-  ) |>
-  filter(!is.na(mean_rate) & !is.infinite(mean_rate))
-
-
-hosp_age <- ggplot(age_weekly_rates, aes(x = WEEK, y = mean_rate, color = AGE_CATEGORY, group = AGE_CATEGORY)) +
-  geom_line(linewidth = 1.2) +
-  labs(
-    title = "Influenza Hospitalization Rates by Age Category",
-    subtitle = "Mean cumulative rate across all flu seasons",
-    x = "Week",
-    y = "Mean Cumulative Rate (per 100,000)",
-    color = "Age Category"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    legend.position = "right",
-    plot.title = element_text(face = "bold", size = 14),
-    panel.grid.minor = element_blank()
-  ) +
-  scale_color_viridis_d(option = "turbo")
-
-hosp_age
-
-```
-
-```{r}
-
-#Hospitalization Burden by Virus Type and Season 
-
-#Calculate total/mean rates (not just counts of observations)
-virus_season_burden <- virus_data |>
-  group_by(flu.season, VIRUS_TYPE) |>
-  summarise(
-    total_rate = sum(CUMULATIVE_RATE, na.rm = TRUE),
-    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
-    n_obs = n(),
-    .groups = 'drop'
-  ) |>
-  group_by(flu.season) |>
-  mutate(
-    prop_by_rate = total_rate / sum(total_rate),
-    prop_by_mean = mean_rate / sum(mean_rate)
-  )
-
-hosp_virus_type <- ggplot(virus_season_burden, aes(x = flu.season, y = prop_by_mean, fill = VIRUS_TYPE)) +
-  geom_col(position = "stack") +
-  labs(
-    title = "Virus Type Disease Burden by Flu Season",
-    subtitle = "Proportion based on mean hospitalization rates",
-    x = "Flu Season",
-    y = "Proportion of Disease Burden",
-    fill = "Virus Type"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.title = element_text(face = "bold", size = 14),
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "right"
-  ) +
-  scale_fill_brewer(palette = "Set1") +
-  scale_y_continuous(labels = percent_format())
-
-hosp_virus_type
-
-```
-
-```{r}
-
-#Mean hospitalization rates by sex
-
-sex_summary <- sex_data |>
-  group_by(SEX_CATEGORY) |>
-  summarise(
-    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
-    sd_rate = sd(CUMULATIVE_RATE, na.rm = TRUE),
-    n_obs = n(),
-    .groups = 'drop'
-  )
-
-hosp_sex <- ggplot(sex_summary, aes(x = SEX_CATEGORY, y = mean_rate, fill = SEX_CATEGORY)) +
-  geom_col(alpha = 0.8) +
-  geom_errorbar(aes(ymin = pmax(0, mean_rate - sd_rate), 
-                    ymax = mean_rate + sd_rate),
-                width = 0.3, alpha = 0.6) +
-  labs(
-    title = "Mean Influenza Hospitalization Rates by Sex",
-    subtitle = "Error bars represent ±1 standard deviation",
-    x = "Sex",
-    y = "Mean Cumulative Rate (per 100,000)"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.title = element_text(face = "bold", size = 14),
-    legend.position = "none"
-  ) +
-  scale_fill_brewer(palette = "Set2")
-
-hosp_sex
-```
-
-```{r}
-
-#Mean hospitalization rates by race 
-
-race_summary <- race_data |>
-  group_by(RACE_CATEGORY) |>
-  summarise(
-    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
-    sd_rate = sd(CUMULATIVE_RATE, na.rm = TRUE),
-    n_obs = n(),
-    .groups = 'drop'
-  )
-
-hosp_race <- ggplot(race_summary, aes(x = reorder(RACE_CATEGORY, mean_rate), 
-                                      y = mean_rate, fill = RACE_CATEGORY)) +
-  geom_col(alpha = 0.8) +
-  geom_errorbar(aes(ymin = pmax(0, mean_rate - sd_rate), 
-                    ymax = mean_rate + sd_rate),
-                width = 0.3, alpha = 0.6) +
-  coord_flip() +
-  labs(
-    title = "Mean Influenza Hospitalization Rates by Race/Ethnicity",
-    subtitle = "Error bars represent ±1 standard deviation",
-    x = "Race/Ethnicity",
-    y = "Mean Cumulative Rate (per 100,000)"
-  ) +
-  theme_minimal(base_size = 12) +
-  theme(
-    plot.title = element_text(face = "bold", size = 14),
-    legend.position = "none"
-  ) +
-  scale_fill_brewer(palette = "Set1")
-
-hosp_race
-
-```
-
-#### Statistically Analyzing Influenza Hospitalization Data
-
-```{r}
-
-##Part 1. Chi-Square Tests##
-
-#Age x High/Low Hospitalization Rate
-age_data <- age_data |>
-  mutate(
-    high_rate = ifelse(CUMULATIVE_RATE > median(CUMULATIVE_RATE, na.rm = TRUE), 
-                       "High", "Low"),
-    high_rate = factor(high_rate, levels = c("Low", "High"))
-  )
-
-chi_age <- chisq.test(table(age_data$AGE_CATEGORY, age_data$high_rate))
-print(chi_age)
-
-
-#Sex x High/Low Hospitalization Rate
-sex_data <- sex_data |>
-  mutate(
-    high_rate = ifelse(CUMULATIVE_RATE > median(CUMULATIVE_RATE, na.rm = TRUE), 
-                       "High", "Low"),
-    high_rate = factor(high_rate, levels = c("Low", "High"))
-  )
-
-chi_sex <- chisq.test(table(sex_data$SEX_CATEGORY, sex_data$high_rate))
-print(chi_sex)
-
-
-#Race x High/Low Hospitalization Rate
-race_data <- race_data |>
-  mutate(
-    high_rate = ifelse(CUMULATIVE_RATE > median(CUMULATIVE_RATE, na.rm = TRUE), 
-                       "High", "Low"),
-    high_rate = factor(high_rate, levels = c("Low", "High"))
-  )  
-
-chi_race <- chisq.test(table(race_data$RACE_CATEGORY, race_data$high_rate))
-print(chi_race)
-
-
-#Virus Type x High/Low Hospitalization Rate
-virus_data <- virus_data |>
-  mutate(
-    high_rate = ifelse(CUMULATIVE_RATE > median(CUMULATIVE_RATE, na.rm = TRUE), 
-                       "High", "Low"),
-    high_rate = factor(high_rate, levels = c("Low", "High"))
-  )
-
-chi_virus <- chisq.test(table(virus_data$VIRUS_TYPE, virus_data$high_rate))
-print(chi_virus)
-
-```
-
-```{r}
-
-##Part 2. Simple Linear Regression
-
-#Age model
-lm_age <- lm(CUMULATIVE_RATE ~ AGE_CATEGORY, data = age_data)
-summary(lm_age)
-
-#Sex model
-lm_sex <- lm(CUMULATIVE_RATE ~ SEX_CATEGORY, data = sex_data)
-summary(lm_sex)
-
-#Race model
-lm_race <- lm(CUMULATIVE_RATE ~ RACE_CATEGORY, data = race_data)
-summary(lm_race)
-
-#Virus model
-lm_virus <- lm(CUMULATIVE_RATE ~ VIRUS_TYPE, data = virus_data)
-summary(lm_virus)
-
-
-```
-
-```{r}
-
-##Part 3. Simple Logistic Regression
-
-# Age model
-logit_age <- glm(high_rate ~ AGE_CATEGORY, data = age_data, family = binomial)
-summary(logit_age)
-
-# Get odds ratios
-exp(coef(logit_age))
-exp(confint(logit_age))
-
-# Sex model
-logit_sex <- glm(high_rate ~ SEX_CATEGORY, data = sex_data, family = binomial)
-summary(logit_sex)
-
-# Race model
-logit_race <- glm(high_rate ~ RACE_CATEGORY, data = race_data, family = binomial)
-summary(logit_race)
-
-# Virus model
-logit_virus <- glm(high_rate ~ VIRUS_TYPE, data = virus_data, family = binomial)
-summary(logit_virus)
-
-```
+This figure shows the change in percent ILI from 2014/15 to 2024/25. There does not appear to be any strong geographic trends in change in percent ILI. For PA specifically, we see very little change. States along the western coast appear to have a greater change in percent ILI, as well as many states in the southeast.
 
 ### Establishing thresholds using MEM method
 
@@ -691,19 +286,17 @@ The MEM method has three main steps:
 
     -   This includes creating a threshold for each severity level (medium, high, very high).
 
-A few key differences from the WHO method including using the Maximum Accumulated Percentage (MAP) curve instead of arbitrary percentiles, as well as providing more intensity levels \[11\].
-
 ```{r}
 
 ### Step 1: Prepping data in MEM Format 
 
 ILINet_clean_mem <- ILINet_clean |>
-  filter(flu.season %in% c("2014/15", "2015/16", "2016/17", "2017/18", 
-                           "2018/19", "2019/20", "2020/21", "2021/22", 
-                           "2022/23", "2023/24"),
-          WEEK != 53) |>        # remove week 53 
-  select(flu.season, WEEK, percent.ili) |>
-  arrange(flu.season, WEEK)
+filter(flu.season %in% c("2014/15", "2015/16", "2016/17", "2017/18",
+"2018/19", "2019/20", "2020/21", "2021/22",
+"2022/23", "2023/24")) |>
+filter(WEEK != 53) |> # remove week 53 so all seasons have 52 weeks
+select(flu.season, WEEK, percent.ili) |>
+arrange(flu.season, WEEK)
 
 
 #To use MEM, we need our data in wide format (each season is a row)
@@ -714,9 +307,7 @@ mem_data <- ILINet_clean_mem |>
     names_prefix = "week_"
   ) |>
   #removing the season column, but keeping it for reference
-  select(-flu.season) 
-
-
+  select(-flu.season)
 
 #add row names (season labels)
 rownames(mem_data) <- ILINet_clean_mem |>
@@ -732,6 +323,7 @@ na_summary <- data.frame(
 )
 
 na_summary  #there is no missing, so we can include all available seasons
+
 ```
 
 To visualize the data, we can plot our ILI curves by season over CDC weeks. This will allow us to see if there are any outliers in our data.
@@ -883,8 +475,10 @@ Here is the final epidemic threshold and intensity thresholds from the MEM model
 
 ###Step 3: Extracting Epidemic Timing 
 
+#storing the epidemic threshold 
 pre_epidemic_threshold <- mem_final$epidemic.threshold[1]
 
+#reshaping back to long format (one row per week per season)
 epidemic_timing <- mem_data |>
   as.data.frame() |>
   mutate(season = rownames(mem_data)) |>
@@ -896,6 +490,7 @@ epidemic_timing <- mem_data |>
   ) |>
   mutate(
     cdc_week = as.numeric(cdc_week),
+    #indicate whether ILI rate that week is above epidemic threshold 
     above_threshold = percent_ili >= pre_epidemic_threshold 
   ) |>
   group_by(season) |>
@@ -908,8 +503,9 @@ epidemic_timing <- mem_data |>
      epidemic_end_cdc = ifelse(any(above_threshold), 
                              last(cdc_week[above_threshold]), 
                              NA),
-    #Peak week and value
+    #Peak week
     peak_week_cdc = cdc_week[which.max(percent_ili)],
+    #Peak percent ili
     peak_value = max(percent_ili, na.rm = TRUE),
     #Count weeks above threshold
     weeks_above_threshold = sum(above_threshold, na.rm = TRUE),
@@ -917,7 +513,11 @@ epidemic_timing <- mem_data |>
   ) |>
   mutate(
   #Calculate duration (from first to last week above threshold)
-  epidemic_duration = epidemic_end_cdc - epidemic_start_cdc + 1)
+  epidemic_duration = ifelse(
+  epidemic_end_cdc >= epidemic_start_cdc,
+  epidemic_end_cdc - epidemic_start_cdc + 1,        
+  (epidemic_end_cdc + 52) - epidemic_start_cdc + 1 #have to account for how our cdc week data wraps around 
+))
 
 
 #Table for epidemic timing
@@ -932,10 +532,13 @@ epidemic_timing_table <- epidemic_timing |>
   ) |>
   mutate(`Peak ILI (%)` = round(`Peak ILI (%)`, 2))
 
+
 epidemic_timing_table
 
 
 ```
+
+The epidemic_timing_table provides all of the information for visualizing our MEM. We can see there is some variability in the duration of "epidemic" influenza activity for each season, though most seasons reach the epidemic threshold around the same time. 
 
 ```{r}
 
@@ -943,33 +546,22 @@ epidemic_timing_table
 
 #reshaping data for plotting 
 mem_data_long <- ILINet_clean_mem |>
+  #keep only flu seasons included in MEM analysis 
   filter(flu.season %in% rownames(mem_data)) |>
   mutate(
-    above_threshold = percent.ili >= mem_final$epidemic.threshold[1]
-  ) |>
-  # Join with epidemic timing to classify periods
-  left_join(
-    epidemic_timing |>
-      select(season = season, epidemic_start_cdc, epidemic_end_cdc),
-    by = c("flu.season" = "season")
-  ) |>
-  mutate(
-    period = case_when(
-      WEEK < epidemic_start_cdc ~ "Pre-epidemic",
-      WEEK >= epidemic_start_cdc & WEEK <= epidemic_end_cdc ~ "Epidemic",
-      WEEK > epidemic_end_cdc ~ "Post-epidemic",
-      TRUE ~ "Unknown"
-    ),
-    period = factor(period, levels = c("Pre-epidemic", "Epidemic", "Post-epidemic"))
-  )
+    #creates column to indicate if ILI rate is above epidemic threshold 
+    above_threshold = percent.ili >= mem_final$epidemic.threshold[1],
+    above_threshold = factor(above_threshold, levels = c(FALSE, TRUE), 
+        labels = c("Below Threshold", "Above Threshold"))
+)
 
 ##Plot 1: All Seasons With Thresholds##
 plot_mem_all_seasons <- ggplot(mem_data_long, 
                                aes(x = WEEK, y = percent.ili)) +
   geom_line(aes(group = flu.season), color = "gray70", alpha = 0.5) +
-  geom_point(aes(color = period), size = 1.5, alpha = 0.6) +
+  geom_point(aes(color = above_threshold), size = 1.5, alpha = 0.6) +
   
-  # Add threshold lines
+  #Add threshold lines
   geom_hline(yintercept = mem_final$epidemic.threshold[1], 
              color = "blue", linetype = "dashed", size = 1) +
   geom_hline(yintercept = mem_final$intensity.thresholds[1], 
@@ -979,7 +571,7 @@ plot_mem_all_seasons <- ggplot(mem_data_long,
   geom_hline(yintercept = mem_final$intensity.thresholds[3], 
              color = "red", size = 0.8) +
   
-  # Add labels
+  #Add labels
   annotate("text", x = 30, 
            y = mem_final$epidemic.threshold[1],
            label = paste0("Epidemic Threshold: ", round(mem_final$epidemic.threshold[1], 2), "%"),
@@ -998,9 +590,8 @@ plot_mem_all_seasons <- ggplot(mem_data_long,
            vjust = -0.5, color = "red", size = 3) +
   
   scale_color_manual(
-    values = c("Pre-epidemic" = "steelblue", 
-               "Epidemic" = "coral", 
-               "Post-epidemic" = "lightblue")
+    values = c("Below Threshold" = "steelblue", 
+               "Above Threshold" = "coral")
   ) +
   
   theme_minimal() +
@@ -1017,10 +608,11 @@ print(plot_mem_all_seasons)
 ggsave("plot_mem_all_seasons.png", plot = plot_mem_all_seasons)
 
 ```
+This figure shows the established epidemic threshold and intensity thresholds plotted on the nine historical influenza seasons used to derive those values. Percent ILI is on the y-axis, and CDC week is on the x-axis. All blue points are CDC weeks below the epidemic threshold, and all red points are CDC weeks above the epidemic threshold. Again, we can see that trends in peaks vary across seasons, but we see similar rises and falls in the beginning and end of each season.
 
 ```{r}
 
- ###Step 5: Applying MEM Thresholds to the Current Season
+ ###Step 5: Applying MEM Thresholds to the Current Season (2024/25)
 
 #Classify each week to a threshold
 classification <- validation.season |>
@@ -1113,26 +705,14 @@ print(plot_season_2024_2025)
 ggsave("plot_season_2024_2025.png", plot = plot_season_2024_2025)
 
 ```
+Finally, this figure shows the established epidemic threshold and intensity levels on our "current" influenza season, which in this case is 2024/25. The x-axis shows "week in season", while each point is labeled with the specific CDC week. Percent ILI is again on the y-axis. The the blue line shows the epidemic threshold of 2.63% ILI. We can clearly see that active flu season ("epidemic") starts right after week 51, and ends right around week 11. There was very high ILI activity during weeks 5, 6, and 7. 
 
 ## Conclusion
 
--   connect different thresholds to specific interventions
+Overall, the MEM is a very useful tool that can be implemented at Penn Wellness to better understand influenza activity on Penn's own campus. The main limitation with this model is deciding which parameter settings work best with the available data. In my future implementation of this work, I plan to include some sensitivity analyses to better decide which parameters align the closest with my data. 
 
--   how do you decide what inputs to put into the model?
+On a broader scale, epidemic thresholds and intensity levels can be used to more accurately inform public health interventions. Certain interventions could be triggered by reaching specific thresholds/intensities. This allows for a more robust and data-driven approach to responding to seasonal influenza outbreaks.  
 
-    -   What are the optimal setting for this model?
-
-    -   How much thresholds might change based on changes in inputs?
-
--   at what point have historical interventions been triggered?
-
-    -   try to tune the model to these interventions
-
--   could create a vector of different inputs - loop that over
-
-    -   graph inputs versus thresholds
-
-This the conclusion. The @sec-results can be invoked here.
 
 ## References
 
