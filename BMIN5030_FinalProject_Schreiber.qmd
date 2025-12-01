@@ -1,5 +1,5 @@
 ---
-title: "Analyzing Influenza Trends and Creating Seasonal Thresholds"
+title: "Analyzing Influenza Trends and Creating Seasonal Thresholds in Pennsylvania"
 subtitle: "BMIN5030 Final Project"
 author: "Hope Schreiber"
 format: html
@@ -12,7 +12,7 @@ embed-resources: true
 
 ## Overview {#sec-overview}
 
-The goal of this project is to explore trends in seasonal influenza-like illness (ILI) cases. This includes demographic trends in regional hospitalization rates, overall case trends in Pennsylvania, and the use of historical data to create seasonal influenza thresholds. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly ILI data at the state and regional level. The overall purpose of this project is to apply the threshold methods established in this project to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
+The goal of this project is to explore trends in seasonal influenza-like illness (ILI) cases. This includes overall case trends in Pennsylvania and the use of historical data to create seasonal influenza thresholds. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly ILI data at the state and regional level. The overall purpose of this project is to apply the threshold methods established in this project to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
 
 [BMIN5030 Final Project GitHub Repository](https://github.com/HopeSch01/BMIN5030_Final_Project_Schreiber)
 
