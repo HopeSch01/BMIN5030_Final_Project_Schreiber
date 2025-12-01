@@ -1,5 +1,5 @@
 ---
-title: "Creating and Evaluating Seasonal Influenza Thresholds in Philadelphia"
+title: "Analyzing Influenza Trends and Creating Seasonal Thresholds"
 subtitle: "BMIN5030 Final Project"
 author: "Hope Schreiber"
 format: html
@@ -10,62 +10,42 @@ embed-resources: true
 
 ------------------------------------------------------------------------
 
-Use this template to complete your project throughout the course. Your Final Project presentation will be based on the contents of this document. Replace the title/name above and text below with your own, but keep the headers. Feel free to change the theme and other display settings, although this is not required.
-
 ## Overview {#sec-overview}
 
-The goal of this project is to explore two popular methods for determining intensity thresholds for seasonal influenza in Pennsylvania. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly influenza-like illness (ILI) data at the state level. The overall purpose of this project is to apply the methods to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
+The goal of this project is to explore trends in seasonal influenza-like illness (ILI) cases. This includes demographic trends in regional hospitalization rates, overall case trends in Pennsylvania, and the use of historical data to create seasonal influenza thresholds. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly ILI data at the state and regional level. The overall purpose of this project is to apply the threshold methods established in this project to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
 
 [BMIN5030 Final Project GitHub Repository](https://github.com/HopeSch01/BMIN5030_Final_Project_Schreiber)
 
 ## Introduction {#sec-introduction}
 
-To capture influenza (flu) season severity both actively and retrospectively, the Center for Disease Control and Prevention (CDC) uses intensity thresholds \[2\]. An intensity threshold is established from data gathered during previous flu seasons, and is then used to assess how severe the current flu season is in comparison \[2\]. They help researchers decide how severe flu activity is during peak flu season, and how severe the season was as a whole once it is finished. This information helps to guide public health action such as targeted messaging and prevention measures.
+Seasonal influenza infects roughly 1 billion people each year \[2\]. Influenza is one of the most common respiratory viruses after the common cold. The best way to prevent infection is receiving your annual influenza vaccine. This vaccine is designed to protect you against three main groups of Flu A and Flu B \[3\]. In order to select the three vaccine virus components, researchers turn to historical influenza data. The surveillance data collected in the previous influenza season not only gives researchers information on how to formulate vaccines, but also provides public health professionals with information on the best ways to target demographics most at risk.
 
-There is not a "gold standard" for calculating intensity thresholds, and multiple methods exist. In 2012, the World Health Organization (WHO) established a new method for defining flu flu thresholds \[3\]. It utilizes means and standard deviation from historical flu data, and the WHO released a standard guide for determining seasonal and alert thresholds \[4\]. The moving epidemic model (MEM) is another method for calculating influenza intensity thresholds. It also uses historical data, but involves more statistics and relies heavily on consecutive seasons of data \[5\]. An R package has been created to guide MEM use \[6\].
+Another important influenza surveillance tool is the use of thresholds. To capture influenza (flu) season severity both actively and retrospectively, the Center for Disease Control and Prevention (CDC) uses intensity thresholds \[4\]. An intensity threshold is established from data gathered during previous flu seasons, and is then used to assess how severe the current flu season is in comparison \[4\]. They help researchers decide how severe flu activity is during peak flu season, and how severe the season was as a whole once it is finished. This information helps to guide public health action such as targeted messaging and prevention measures.
 
-The CDC collaborates with state health departments and other clinical laboratories to maintain the U.S. influenza surveillance system \[1\]. Information on outpatient visits is reported by partners through the Influenza-like Illness Surveillance Network (ILINet) \[1\]. More than 110 million patient visits were reported during the 2022-23 season \[1\]. This is where the Public Health Team at Penn Wellness reports weekly ILI cases among students. With robust historical data available, seasonal flu thresholds can be established in Pennsylvannia to better understand current flu activity. Additionally, this provides an opportunity to compare two popular methods in establishing thresholds. This is a project that is rooted in the core epidemiological task of surveillance, but also includes statistical modeling skills and relevance to virology. Information from this project can help inform seasonal flu thresholds on UPenn's own campus. The Public Health Team at Penn Wellness collects weekly flu data, and maintains historical flu data spanning back to 2009. There is an opportunity for this project to have a real impact on our own campus community.
+There is not a "gold standard" for calculating intensity thresholds, and multiple methods exist. In 2012, the World Health Organization (WHO) established a new method for defining flu thresholds \[5\]. It utilizes means and standard deviation from historical flu data, and the WHO released a standard guide for determining seasonal and alert thresholds \[6\]. Following the WHO method, the moving epidemic model (MEM) was established for calculating influenza intensity thresholds. It also uses historical data, but involves more statistics and relies heavily on consecutive seasons of data \[7\]. An R package has been created to guide MEM use \[8\].
+
+The CDC collaborates with state health departments and other clinical laboratories to maintain the U.S. influenza surveillance system \[1\]. Information on outpatient visits is reported by partners through the Influenza-like Illness Surveillance Network (ILINet) \[1\]. More than 110 million patient visits were reported during the 2022-23 season \[1\]. This is where the Public Health Team at Penn Wellness reports weekly ILI cases among students. With robust historical data available, seasonal flu thresholds can be established in Pennsylvannia to better understand current flu activity. This is a project that is rooted in the core epidemiological task of surveillance, but also includes statistical modeling skills and relevance to virology. Information from this project can help inform seasonal flu thresholds on UPenn's own campus. The Public Health Team at Penn Wellness collects weekly flu data, and maintains historical flu data spanning back to 2009. There is an opportunity for this project to have a real impact on our own campus community.
 
 ## Methods {#sec-methods}
 
-Describe the data used and general methodological approach used to address the problem described in the @sec-introduction. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why.
+The data utilized for this project is from the U.S. influenza surveillance system (FluView) in collaboration with the CDC \[1\]. All data used in this project is at the state and regional level.
 
-The data utilized for this project is from the U.S. influenza surveillance system in collaboration with the CDC \[1\]. All data used in this project is at the state level, though FluView has data available at the regional and national level.
+There is an important distinction between an ILI case and a diagnosed influenza case. An ILI case is defined in this system as "a fever (temperature of 100°F \[37.8°C\] or greater) and a cough and/or sore throat. ILINet will capture any visit due to any respiratory pathogen that presents with this case definition. In medical records, this appears as diagnostic code J11.1. If a patient tests positive for Influenza A or Influenza B, they will receive a diagnostic code of J10.1 \[9\].
 
-In order to create seasonal influenza thresholds, data specifically from ILINet was utilized. This includes information on outpatients visits to health care providers for respiratory illness. This setting most closely aligns to that of Penn students, which is why it was chosen for this project.
+In order to analyze case trends in Pennsylvania and create seasonal influenza thresholds, data specifically from ILINet was utilized. This includes information on outpatients visits to health care providers for respiratory illness. This setting most closely aligns to that of Penn students, which is why it was chosen for the threshold portion of this project.
 
-An ILI case is defined in this system as "a fever (temperature of 100°F \[37.8°C\] or greater) and a cough and/or sore throat. ILINet will capture any visit due to any respiratory pathogen that presents with this case definition.
+To explore the relationship between different demographic trends and Influenza more broadly, data at the regional level was analyzed. This includes information from 110 U.S. Influenza Collaborating Laboratories and 240 National Respiratory and Enteric Virus Surveillance System Laboratories \[1\]. This data set includes information on virus type, age, race, and sex.
 
-FluView includes other important surveillance data including age group distribution of positive influenza tests, hospitalizations, and mortality. These will also be explored to obtain a complete and accurate picture of ILI activity prior to establishing state level seasonal activity thresholds.
-
-#### Intro/background Exploration
-
--   line graph of ILI cases by CDC week over the years
-
-    -   ILINet data
-
--   map showing change in ILI activity?
-
-    -   would need to download data for all states from FluView
-
--   Flu A versus Flu B
-
--   Age group distributions
-
-    -   broken down by Flu A versus Flu B
-
-    -   broken down by CDC week
-
--   hospitalizations
-
-    -   broken down by CDC week
-
-    -   broken down by age
+#### Loading and Cleaning Data
 
 ```{r}
 
 #installing package for MEM method 
 install.packages("mem", repos = "https://cloud.r-project.org")
+
+#installing other relevant packages
+install.packages("sf", repos = "https://cloud.r-project.org")
+install.packages("tidycensus", repos = "https://cloud.r-project.org")
 
 #loading necessary packages 
 library(tidyverse)
@@ -75,12 +55,16 @@ library(broom)
 library(zoo)
 library(ggplot2)
 library(mem)
-
+library(tidyverse)
+library(sf)
+library(tidycensus)
+library(scales)
 ```
 
 ```{r}
 
-#loading in PA ILINet data from 2014-2025
+#loading in PA ILINet data from 2014-2025 
+
 ILINet <- read_csv("C:/Users/hopeh/Downloads/Fall 2025/EPID 6000 Data Science for Biomedical Informatics/Final Project/FluViewPhase2Data_USE/ILINet.csv")
 
 #keeping only relevant columns 
@@ -94,60 +78,9 @@ names(ILINet)[names(ILINet) == "%UNWEIGHTED ILI"] <- "percent.ili"
 any(is.na(ILINet)) #no missing
 
 
-```
-
-According to the CDC, the "peak" months of influenza season are October through May \[7\]. We will use this timeline to create our influenza seasons. These dates correspond to CDC weeks 40-20. The ILINet data needs to be mutated to create influenza seasons that cross over two years.
-
-```{r}
-
-#Establishing Influenza Seasons for WHO
+#Cleaning PA ILINet Case Data
 
 ILINet_clean <- ILINet |>
-  mutate(
-    #Creating a flu season variable
-    flu.season = case_when(
-      WEEK >= 40 ~ paste0(YEAR, "/", substr(YEAR + 1, 3, 4)), #Oct-Dec belong to season starting that year
-      WEEK <= 20 ~ paste0(YEAR - 1, "/", substr(YEAR, 3, 4)), #Jan-May belong to to season that started previous year 
-      TRUE ~ NA_character_                                        
-    )
-  ) |>
-  
-  #filter off-season weeks (weeks 21-39)
-  filter(!is.na(flu.season)) |>
-  
-  #Check if each season has a week 53 (not typical, but happens in some calendar years)
-  group_by(flu.season) |>
-  mutate(
-    has_week_53 = any(WEEK == 53)
-  ) |>
-  ungroup() |>
-  
-#Creating a variable for "week in flu season" - this will help with plotting later 
-#It will be important to note the distinction between WEEK = CDC Week, and week.in.season = strictly for plotting
-  mutate (
-    week.in.season = case_when(
-      WEEK >= 40 & WEEK <= 52 ~ WEEK - 39,    #Weeks 40-52 become 1-13
-      WEEK == 53 ~ 14,                        #Week 53 becomes 14 (if it exists)
-      WEEK <= 20 & has_week_53 ~ WEEK + 14,   #Weeks 1-29 become 15-34   OR
-      WEEK <= 20 & !has_week_53 ~ WEEK + 13,  #Weeks 1-20 become 14-34 
-      TRUE ~ NA_real_
-    )
-  ) |>
-  #removing the help column
-  select(-has_week_53) |>
-  arrange(flu.season, week.in.season)
-
-#View summary 
-summary(ILINet_clean)
-
-
-```
-
-```{r}
-
-#Establishing Influenza Seasons for MEM
-
-ILINet_clean_mem <- ILINet |>
   mutate(
     #Creating a flu season variable
     flu.season = case_when(
@@ -156,34 +89,23 @@ ILINet_clean_mem <- ILINet |>
     )
   ) |>
   
-  #Check if each season has a week 53 (not typical, but happens in some calendar years)
+#Check if each season has a week 53 (not typical, but happens in some calendar years)
   group_by(flu.season) |>
   mutate(
     has_week_53 = any(WEEK == 53)
   ) |>
-  ungroup() |>
-  
-#Creating a variable for "week in flu season" - this will help with plotting later 
-#It will be important to note the distinction between WEEK = CDC Week, and week.in.season = strictly for plotting
-  mutate (
-    week.in.season = case_when(
-      WEEK >= 40 & WEEK <= 52 ~ WEEK - 39,    #Weeks 40-52 become 1-13
-      WEEK == 53 ~ 14,                        #Week 53 becomes 14 (if it exists)
-      WEEK <= 20 & has_week_53 ~ WEEK + 14,   #Weeks 1-29 become 15-34   OR
-      WEEK <= 20 & !has_week_53 ~ WEEK + 13,  #Weeks 1-20 become 14-34 
-      WEEK >= 21 & WEEK <= 39 ~ NA_real_      #"Off-season" - no plotting index
-    )
-  ) |>
-  #removing the help column
-  select(-has_week_53) |>
-  arrange(flu.season, week.in.season)
+  ungroup()
+
+#Organizing CDC week variable to match with flu.season variable
+ILINet_clean <- ILINet_clean |>
+  mutate(WEEK = factor(WEEK, levels = c(40:53, 1:20)))
 
 #View summary 
 summary(ILINet_clean)
 
 ```
 
-With the years available on ILINet, seasons 2014/15 through 2023/24 can be used to establish thresholds, and these will be validated on season 2024/25.
+To utilize MEM, we need baseline seasons and a validation season. With the years available on ILINet, seasons 2014/15 through 2023/24 can be used to establish thresholds, and these will be validated on season 2024/25.
 
 ```{r}
 
@@ -198,149 +120,562 @@ validation.season <- ILINet_clean |>
 
 ```
 
+```{r}
+
+#Loading in ILINet data from all states for the years 2014/15 and 2024/25
+#This will be used to examine the change in ILI cases over 10 years 
+
+ILINet_AllStates <- read_csv("C:/Users/hopeh/Downloads/Fall 2025/EPID 6000 Data Science for Biomedical Informatics/Final Project/BMIN5030_Final_Project_Schreiber/ILINet_PAChange.csv")
+
+#keeping only relevant columns 
+ILINet_AllStates <- ILINet_AllStates |>
+  select("REGION TYPE", "REGION", "YEAR", "WEEK", "ILITOTAL", "TOTAL PATIENTS" ) |>
+  na.omit(ILINet_AllStates)
+
+#renaming for clarity 
+names(ILINet_AllStates)[names(ILINet_AllStates) == "%UNWEIGHTED ILI"] <- "percent.ili"
+
+
+#Cleaning ILINet All States Data
+ILINet_AllStates_clean <- ILINet_AllStates |>
+  mutate(
+    #Creating a flu season variable
+    flu.season = case_when(
+      WEEK >= 40 ~ paste0(YEAR, "/", substr(YEAR + 1, 3, 4)), #Oct-Dec belong to season starting that year
+      TRUE       ~ paste0(YEAR - 1, "/", substr(YEAR, 3, 4)), #All other weeks  
+    ))
+
+
+```
+
+```{r}
+
+#Loading Regional Hospitalization Data 
+FluSurv_Hospitalizations <- read_csv("C:/Users/hopeh/Downloads/Fall 2025/EPID 6000 Data Science for Biomedical Informatics/Final Project/BMIN5030_Final_Project_Schreiber/FluSurveillance_Hospitalizations.csv")
+
+#renaming for clarity 
+names(FluSurv_Hospitalizations)[names(FluSurv_Hospitalizations) == "YEAR...3"] <- "flu.season"
+
+names(FluSurv_Hospitalizations)[names(FluSurv_Hospitalizations) == "YEAR...4"] <- "YEAR"
+
+#Cleaning Data 
+FluSurv_Hospitalizations_clean <- FluSurv_Hospitalizations |> 
+  filter(!is.na(flu.season)) |>
+  mutate(
+    CUMULATIVE_RATE = as.numeric(`CUMULATIVE RATE`),
+    WEEKLY_RATE = as.numeric(`WEEKLY RATE`),
+    AGE_ADJ_CUM_RATE = as.numeric(`AGE ADJUSTED CUMULATIVE RATE`),
+    AGE_ADJ_WEEKLY_RATE = as.numeric(`AGE ADJUSTED WEEKLY RATE`),
+    #Clean up other columns
+    flu.season = as.factor(flu.season),
+    YEAR = as.numeric(YEAR),
+    WEEK = as.factor(WEEK),
+    AGE_CATEGORY = `AGE CATEGORY`,
+    SEX_CATEGORY = `SEX CATEGORY`,
+    RACE_CATEGORY = `RACE CATEGORY`,
+    VIRUS_TYPE = `VIRUS TYPE CATEGORY`
+  ) |>
+  #Remove rows where all rate columns are NA
+  filter(!is.na(CUMULATIVE_RATE) | !is.na(WEEKLY_RATE))
+
+#re-ordering CDC weeks for plot clarity 
+FluSurv_Hospitalizations_clean$WEEK <- factor(FluSurv_Hospitalizations_clean$WEEK, levels = c(40:53, 1:20))
+
+#Filtering patterns for variables 
+
+#Age
+age_data <- ILINet_Hospitalizations_clean |>
+  filter(!is.na(AGE_CATEGORY)) |>
+  filter(!AGE_CATEGORY %in% c("0-< 1yr", "0-4 yr", "< 18", ">= 18", ">= 65 yr", ">= 75", "Overall"))
+
+#Sex
+sex_data <- ILINet_Hospitalizations_clean |>
+  filter(!is.na(SEX_CATEGORY)) |>
+  filter(!is.na(SEX_CATEGORY) & SEX_CATEGORY != "Overall")
+
+#Race
+race_data <- ILINet_Hospitalizations_clean |>
+  filter(!is.na(RACE_CATEGORY)) |>
+  filter(!is.na(RACE_CATEGORY) & RACE_CATEGORY != "Overall")
+
+#Influenza Type 
+virus_data <- ILINet_Hospitalizations_clean |>
+  filter(!is.na(VIRUS_TYPE) & 
+         VIRUS_TYPE != "Overall" & 
+         VIRUS_TYPE != "A(H1N1)pdm09" & 
+         VIRUS_TYPE != "A(H3N2)")
+```
+
+This data consists of regional influenza hospitalization rates (per 100,000 population) for the FluSurv-NET Network. This network is part of the Influenza division of the CDC.
+
+#### Overview of Data
+
+```{r}
+
+##ILINet Data
+head(ILINet_clean)
+dim(ILINet_clean)
+glimpse(ILINet_clean)
+
+##FluSurv-NET Data
+head(FluSurv_Hospitalizations_clean)
+dim(FluSurv_Hospitalizations_clean)
+glimpse(FluSurv_Hospitalizations_clean)
+
+```
+
+The ILINet_clean dataframe has 9 variables and 520 rows of data. In this project, the variables primarily utilized will be WEEK, percent.ILI, flu.season, and week.in.season. The WEEK variable corresponds to CDC week. A typical flu season starts around CDC week 40, and ends around CDC week 20. This is why we re-ordered this variable earlier. We want to view figures starting at CDC week 40. The percent.ili variable provides the percent of medical visits related to an ILI diagnoses during any given week. It is the ILITOTAL variable divided by the TOTAL PATIENTS variable. We will define our flu thresholds and intensity levels using percent.ili.
+
+The FluSurv_Hospitalizations\>clean dataframe has 21 variables and 23,683 rows of data.
+
 ## Results {#sec-results}
 
-Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
-
-#### 1) Establishing thresholds using WHO method
-
-The WHO method for defining thresholds was established in 2012 with the purpose of developing global standards for influenza surveillance \[3\]. It depends on historical data, and aligns previous years on the median week of peak activity. Then thresholds are assigned based on means and standard deviations of the aligned data. The paper by Tay et al. was used as a guide in applying this method to the ILINet data in Pennsylvania.
-
-The WHO method requires identifying epidemic weeks to exclude them from baseline \[3\]. If we include epidemic weeks in our baseline, we would inflate the mean and standard deviation, creating thresholds that are too high. There are multiple ways to do this, with the simplest being a visual inspection of potential epidemic periods using a line graph. A more robust approach is the within-season percentile method. This will identify epidemic weeks as those are are unusually high relative to other weeks in the same season. Additionally, a moving average will be used to smooth data and reduce noise \[8\].
+#### Exploring Pennsylvania Historical ILI Case Trends
 
 ```{r}
 
-### Step 1. Identifying Epidemic Periods 
+#simple table
+ILINet_clean |>
+  group_by(flu.season) |>
+  summarize(
+    peak_week = WEEK[which.max(ILITOTAL)],
+    peak_cases = max(ILITOTAL),
+    peak_percent = max(percent.ili)
+  )
 
-epidemic.periods <- function(ILINet_clean, percentile = 0.90) {
-  percentile.data <- ILINet_clean |>
-    arrange(flu.season, week.in.season) |>
-    group_by(flu.season) |>
-    mutate(
-      #calculating season-specific percentile thresholds
-      season.threshold = quantile(percent.ili, probs = percentile, na.rm = TRUE),
-      #Weeks above this threshold are considered epidemic weeks 
-      above.thresh = percent.ili >= season.threshold,
-      #Using moving average to smooth
-      ma_3weeks = zoo::rollmean(percent.ili, k = 3, fill = NA, align = "center"), 
-      #Identifying peak week in each season
-      peak.week = percent.ili == max(percent.ili, na.rm = TRUE) )|>
-        ungroup()
-  
-  #Create a summary for each season        
-  epidemic.summary <- percentile.data |>
-    group_by(flu.season) |>
-    summarise(
-      total.weeks = n(),
-      epidemic.weeks = sum(above.thresh, na.rm = TRUE),
-      percent.epidemic = round(100*epidemic.weeks / total.weeks, 1),
-      peak.ili = max(percent.ili, na.rm = TRUE),
-      peak.week = week.in.season[which.max(percent.ili)]
-    )
-  
-  return(list(ILINet_clean = percentile.data, summary = epidemic.summary))
-}
-  
-#Next, apply this within-season percentile method to our baseline seasons 
-within.season.percent <- epidemic.periods(baseline.seasons, percentile = 0.90)
-
-print(within.season.percent$summary)
-
-
-############# MAKE THIS CLEANER ##############
-##############################################
-# Visualize identified epidemic periods
-ggplot(within.season.percent$ILINet_clean, aes(x = week.in.season, y = percent.ili)) +
-  geom_line(aes(group = flu.season), color = "gray60") +
-  geom_point(aes(color = above.thresh), size = 2) +
-  geom_point(data = filter(within.season.percent$ILINet_clean, peak.week), 
-             color = "red", size = 4, shape = 17) + #Triangle for peak
-  facet_wrap(~flu.season, scales = "free_y") +
-  scale_color_manual(
-    values = c("FALSE" = "blue", "TRUE" = "orange"),
-    labels = c("Non-epidemic", "Epidemic")
-  ) +
-  theme_minimal() +
+#Total ILI Cases by CDC Week
+ggplot(ILINet_clean, aes(x = WEEK, y = ILITOTAL, color = flu.season, group = flu.season)) +
+  geom_line(linewidth = 1.2) +
   labs(
-    title = "Epidemic Period Identification (Within-Season 90th Percentile)",
-    subtitle = "Red triangles indicate season peaks",
     x = "Week in Season",
-    y = "Percent ILI (%)",
-    color = "Classification"
+    y = "Total ILI Cases",
+    color = "Flu Season"
+  ) + theme_minimal()
+
+
+#Peak Timing of ILI Cases 
+ggplot(ILINet_clean, aes(x = flu.season, y = WEEK, size = ILITOTAL)) +
+  geom_point(alpha = 0.5)
+
+
+
+```
+As seen in both figures, ILI cases typically peak at the very end and beginning of the year (November - February). We can also see the total number of cases differs drastically depending on the season. The 2017/18 season had an extremely high peak, and it can be seen that last flu season (2024/25) had a large peak around a similar time. Some flu seasons saw peaks earlier in the season, such as 2022/23 and 2023/24. Other seasons saw later peaks, such as 2019/20. 
+
+```{r}
+
+#Trend over CDC week 
+lm_rate_week <- lm(percent.ili ~ WEEK, data = ILINet_clean)
+summary(lm_rate_week)
+
+#Trend over season 
+lm_rate_season <- lm(percent.ili ~ flu.season, data = ILINet_clean)
+summary(lm_rate_season)
+
+
+```
+It can be seen that ILI rates increase over the season, peaking around week 53, and then start to decrease around week 13. This aligns with what we saw in the previous figures. 
+
+Comparing flu seasons, the ILI rate in PA does not generally differ significantly from the 2014/15 season, except for 2021/22, which had a significantly lower ILI rate. 
+
+
+```{r}
+
+#Creating a heat map to show change in total ILI across all states
+
+ili_change <- ILINet_AllStates_clean |>
+  group_by(REGION, flu.season) |>
+  summarize(
+    total_ili = sum(ILITOTAL, na.rm = TRUE),
+    total_patients = sum(`TOTAL PATIENTS`, na.rm = TRUE)
+  ) |>
+  mutate(percent_ili = (total_ili / total_patients) * 100) |>
+  select(REGION, flu.season, percent_ili) |>
+  pivot_wider(names_from = flu.season, values_from = percent_ili) |>
+  mutate(change = `2024/25` - `2014/15`)
+
+print(ili_change)
+
+states <- get_acs(
+  geography = "state",
+  variables = "B01001_001",
+  year = 2020,
+  geometry = TRUE
+) |>
+  filter(!NAME %in% c("Alaska", "Hawaii", "Puerto Rico"))
+
+ILI_map_data <- states |>
+  left_join(ili_change, by = c("NAME" = "REGION"))
+
+
+ggplot(ILI_map_data) +
+  geom_sf(aes(fill = change), color = "gray30", size = 0.3) +
+  scale_fill_gradient2(
+    low = "#2166ac", 
+    mid = "white", 
+    high = "#b2182b",
+    midpoint = 0,
+    name = "Change in\nPercent ILI\n(percentage points)",
+    labels = function(x) sprintf("%.1f%%", x)
   ) +
-  theme(legend.position = "bottom")
+  labs(
+    title = "Change in Percent ILI: 2024/25 vs 2014/15",
+    subtitle = "By State"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    legend.position = "right",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
 
 ```
+This figure shows the change in percent ILI from 2014/15 to 2024/25. There does not appear to be any strong geographic trends in change in percent ILI. For PA specifically, we see very little change. States along the western coast appear to have a greater change in percent ILI, as well as many states in the southeast. 
 
-Now, with "epidemic" weeks established, we can move on to exploring baseline (non-epidemic) activity.
+
+### Exploring Regional Influenza Hospitalization Trends
 
 ```{r}
 
-### Step 2: Calculating Baseline Activity 
+#Summary statistics by flu season 
 
-baseline.activity <- within.season.percent$ILINet_clean |>
-  filter(!above.thresh) |>   #exclude weeks above 90th percentile in each season
+year_summary <- ILINet_Hospitalizations_clean |>
+  group_by(flu.season) |>
   summarise(
-    baseline.mean = mean(percent.ili, na.rm = TRUE),  #calculate mean of baseline weeks
-    baseline.sd = sd(percent.ili, na.rm = TRUE),      #calculate standard dev. of baseline weeks
-    n.weeks = n()
-  )
+    n_obs = n(),
+    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
+    median_rate = median(CUMULATIVE_RATE, na.rm = TRUE),
+    sd_rate = sd(CUMULATIVE_RATE, na.rm = TRUE),
+    min_rate = min(CUMULATIVE_RATE, na.rm = TRUE),
+    max_rate = max(CUMULATIVE_RATE, na.rm = TRUE),
+    q25_rate = quantile(CUMULATIVE_RATE, 0.25, na.rm = TRUE),
+    q75_rate = quantile(CUMULATIVE_RATE, 0.75, na.rm = TRUE),
+    na_count = sum(is.na(CUMULATIVE_RATE))
+  ) |>
+  arrange(flu.season)
+
+year_summary
+```
+
+```{r}
+
+#Summary statistics by age category
+
+age_summary <- ILINet_Hospitalizations_clean |>
+  group_by(AGE_CATEGORY) |>
+  summarise(
+    n_obs = n(),
+    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
+    median_rate = median(CUMULATIVE_RATE, na.rm = TRUE),
+    sd_rate = sd(CUMULATIVE_RATE, na.rm = TRUE),
+    min_rate = min(CUMULATIVE_RATE, na.rm = TRUE),
+    max_rate = max(CUMULATIVE_RATE, na.rm = TRUE),
+    q25_rate = quantile(CUMULATIVE_RATE, 0.25, na.rm = TRUE),
+    q75_rate = quantile(CUMULATIVE_RATE, 0.75, na.rm = TRUE),
+    na_count = sum(is.na(CUMULATIVE_RATE))
+  )|>
+  arrange(desc(mean_rate))
+
+print(age_summary)
+
 
 
 ```
 
-The WHO method defined three levels of flu thresholds: seasonal, average, and alert \[3\]. When the seasonal threshold is crossed into, this signals the start of flu season. We will define the seasonal threshold as mean + 2 SD (95th percentile), and the alert threshold as mean + 3 SD (99.7th percentile). Tay et al. explains that there is not a mandated approach to choosing these threshold definitions.
+```{r}
+
+#Rates over time by flu season 
+
+#calculating weekly rates by flu season 
+weekly_rates <- ILINet_Hospitalizations_clean |>
+  group_by(flu.season, WEEK) |>
+  summarise(
+    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
+    median_rate = median(CUMULATIVE_RATE, na.rm = TRUE),
+    .groups = 'drop'
+  ) |>
+  filter(!is.na(mean_rate) & !is.infinite(mean_rate))
+
+#Time series of hospitalization rates by flu season
+hosp_flu_season <- ggplot(weekly_rates, aes(x = WEEK, y = mean_rate, color = flu.season, group = flu.season)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 1.5, alpha = 0.6) +
+  labs(
+    title = "Influenza Hospitalization Rates Over Time by Flu Season",
+    subtitle = "Mean cumulative rate by week",
+    x = "Week",
+    y = "Mean Cumulative Rate (per 100,000)",
+    color = "Flu Season"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(face = "bold", size = 14),
+    panel.grid.minor = element_blank(),
+    legend.key.size = unit(0.5, "cm")
+  ) +
+  scale_color_viridis_d(option = "turbo")
+
+hosp_flu_season
+
+```
 
 ```{r}
 
-### Step 3. Calculate WHO Thresholds
+#Rates over time by age category 
 
-thresholds <- baseline.activity |>
+#Calculate rates by age category and week (across all seasons)
+age_weekly_rates <- age_data |>
+  group_by(AGE_CATEGORY, WEEK) |>
+  summarise(
+    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
+    .groups = 'drop'
+  ) |>
+  filter(!is.na(mean_rate) & !is.infinite(mean_rate))
+
+
+hosp_age <- ggplot(age_weekly_rates, aes(x = WEEK, y = mean_rate, color = AGE_CATEGORY, group = AGE_CATEGORY)) +
+  geom_line(linewidth = 1.2) +
+  labs(
+    title = "Influenza Hospitalization Rates by Age Category",
+    subtitle = "Mean cumulative rate across all flu seasons",
+    x = "Week",
+    y = "Mean Cumulative Rate (per 100,000)",
+    color = "Age Category"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(face = "bold", size = 14),
+    panel.grid.minor = element_blank()
+  ) +
+  scale_color_viridis_d(option = "turbo")
+
+hosp_age
+
+```
+
+```{r}
+
+#Hospitalization Burden by Virus Type and Season 
+
+#Calculate total/mean rates (not just counts of observations)
+virus_season_burden <- virus_data |>
+  group_by(flu.season, VIRUS_TYPE) |>
+  summarise(
+    total_rate = sum(CUMULATIVE_RATE, na.rm = TRUE),
+    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
+    n_obs = n(),
+    .groups = 'drop'
+  ) |>
+  group_by(flu.season) |>
   mutate(
-    average.threshold = baseline.mean + (2 * baseline.sd),
-    alert.threshold = baseline.mean + (3 * baseline.sd)
+    prop_by_rate = total_rate / sum(total_rate),
+    prop_by_mean = mean_rate / sum(mean_rate)
   )
 
-print(thresholds)
+hosp_virus_type <- ggplot(virus_season_burden, aes(x = flu.season, y = prop_by_mean, fill = VIRUS_TYPE)) +
+  geom_col(position = "stack") +
+  labs(
+    title = "Virus Type Disease Burden by Flu Season",
+    subtitle = "Proportion based on mean hospitalization rates",
+    x = "Flu Season",
+    y = "Proportion of Disease Burden",
+    fill = "Virus Type"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right"
+  ) +
+  scale_fill_brewer(palette = "Set1") +
+  scale_y_continuous(labels = percent_format())
+
+hosp_virus_type
 
 ```
-
-Based on our historical flu season data (2014/15 through 2023/24), the seasonal threshold is 3.6% and the alert threshold is 4.5%. Note - these percentages represent the percent of outpatient medical visits associated with an ILI diagnosis in Pennsylvania.
 
 ```{r}
 
-### Step 4. Visualize WHO Method Results 
+#Mean hospitalization rates by sex
 
-#Applying thresholds to current flu season (2024/25)
-if(nrow(validation.season) > 0) {
-  current.flu.season <- ggplot() +
-    #Current season (2024/25) data
-    geom_line(
-      data = validation.season,
-      aes(x = week.in.season, y = percent.ili, group = flu.season),
-      color = "black",
-      alpha = 0.5
-    ) +
-    #Adding each threshold line individually
-    geom_hline(yintercept = thresholds$baseline.mean, color = "blue", linetype = "dashed", size = 1) +
-    geom_hline(yintercept = thresholds$average.threshold, color = "orange", linetype = "dashed", size = 1) +
-    geom_hline(yintercept = thresholds$alert.threshold, color = "red", linetype = "dashed", size = 1)
-}
+sex_summary <- sex_data |>
+  group_by(SEX_CATEGORY) |>
+  summarise(
+    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
+    sd_rate = sd(CUMULATIVE_RATE, na.rm = TRUE),
+    n_obs = n(),
+    .groups = 'drop'
+  )
 
-print(current.flu.season)
+hosp_sex <- ggplot(sex_summary, aes(x = SEX_CATEGORY, y = mean_rate, fill = SEX_CATEGORY)) +
+  geom_col(alpha = 0.8) +
+  geom_errorbar(aes(ymin = pmax(0, mean_rate - sd_rate), 
+                    ymax = mean_rate + sd_rate),
+                width = 0.3, alpha = 0.6) +
+  labs(
+    title = "Mean Influenza Hospitalization Rates by Sex",
+    subtitle = "Error bars represent ±1 standard deviation",
+    x = "Sex",
+    y = "Mean Cumulative Rate (per 100,000)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    legend.position = "none"
+  ) +
+  scale_fill_brewer(palette = "Set2")
 
-
-###Still need to make this cleaner###
-#For context - blue line is basically mean activity (seasonal threshold); orange line is average threshold, red line is alert threshold
+hosp_sex
 ```
 
--   code used to establish thresholds w/ explanation
+```{r}
 
--   graph of each year
+#Mean hospitalization rates by race 
 
-#### 2) Establishing thresholds using MEM method
+race_summary <- race_data |>
+  group_by(RACE_CATEGORY) |>
+  summarise(
+    mean_rate = mean(CUMULATIVE_RATE, na.rm = TRUE),
+    sd_rate = sd(CUMULATIVE_RATE, na.rm = TRUE),
+    n_obs = n(),
+    .groups = 'drop'
+  )
 
-The MEM method is a similar yet slightly more sophisticated version of the WHO method. It uses automated algorithms to identify epidemic periods. This method was established by Vega and Lozano in 2013 and has been used previously to establish epidemic thresholds in European countries \[5\]. There is an R package available to download with a reference manual which was referred to throughout this project \[6\].
+hosp_race <- ggplot(race_summary, aes(x = reorder(RACE_CATEGORY, mean_rate), 
+                                      y = mean_rate, fill = RACE_CATEGORY)) +
+  geom_col(alpha = 0.8) +
+  geom_errorbar(aes(ymin = pmax(0, mean_rate - sd_rate), 
+                    ymax = mean_rate + sd_rate),
+                width = 0.3, alpha = 0.6) +
+  coord_flip() +
+  labs(
+    title = "Mean Influenza Hospitalization Rates by Race/Ethnicity",
+    subtitle = "Error bars represent ±1 standard deviation",
+    x = "Race/Ethnicity",
+    y = "Mean Cumulative Rate (per 100,000)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    legend.position = "none"
+  ) +
+  scale_fill_brewer(palette = "Set1")
+
+hosp_race
+
+```
+
+#### Statistically Analyzing Influenza Hospitalization Data
+
+```{r}
+
+##Part 1. Chi-Square Tests##
+
+#Age x High/Low Hospitalization Rate
+age_data <- age_data |>
+  mutate(
+    high_rate = ifelse(CUMULATIVE_RATE > median(CUMULATIVE_RATE, na.rm = TRUE), 
+                       "High", "Low"),
+    high_rate = factor(high_rate, levels = c("Low", "High"))
+  )
+
+chi_age <- chisq.test(table(age_data$AGE_CATEGORY, age_data$high_rate))
+print(chi_age)
+
+
+#Sex x High/Low Hospitalization Rate
+sex_data <- sex_data |>
+  mutate(
+    high_rate = ifelse(CUMULATIVE_RATE > median(CUMULATIVE_RATE, na.rm = TRUE), 
+                       "High", "Low"),
+    high_rate = factor(high_rate, levels = c("Low", "High"))
+  )
+
+chi_sex <- chisq.test(table(sex_data$SEX_CATEGORY, sex_data$high_rate))
+print(chi_sex)
+
+
+#Race x High/Low Hospitalization Rate
+race_data <- race_data |>
+  mutate(
+    high_rate = ifelse(CUMULATIVE_RATE > median(CUMULATIVE_RATE, na.rm = TRUE), 
+                       "High", "Low"),
+    high_rate = factor(high_rate, levels = c("Low", "High"))
+  )  
+
+chi_race <- chisq.test(table(race_data$RACE_CATEGORY, race_data$high_rate))
+print(chi_race)
+
+
+#Virus Type x High/Low Hospitalization Rate
+virus_data <- virus_data |>
+  mutate(
+    high_rate = ifelse(CUMULATIVE_RATE > median(CUMULATIVE_RATE, na.rm = TRUE), 
+                       "High", "Low"),
+    high_rate = factor(high_rate, levels = c("Low", "High"))
+  )
+
+chi_virus <- chisq.test(table(virus_data$VIRUS_TYPE, virus_data$high_rate))
+print(chi_virus)
+
+```
+
+```{r}
+
+##Part 2. Simple Linear Regression
+
+#Age model
+lm_age <- lm(CUMULATIVE_RATE ~ AGE_CATEGORY, data = age_data)
+summary(lm_age)
+
+#Sex model
+lm_sex <- lm(CUMULATIVE_RATE ~ SEX_CATEGORY, data = sex_data)
+summary(lm_sex)
+
+#Race model
+lm_race <- lm(CUMULATIVE_RATE ~ RACE_CATEGORY, data = race_data)
+summary(lm_race)
+
+#Virus model
+lm_virus <- lm(CUMULATIVE_RATE ~ VIRUS_TYPE, data = virus_data)
+summary(lm_virus)
+
+
+```
+
+```{r}
+
+##Part 3. Simple Logistic Regression
+
+# Age model
+logit_age <- glm(high_rate ~ AGE_CATEGORY, data = age_data, family = binomial)
+summary(logit_age)
+
+# Get odds ratios
+exp(coef(logit_age))
+exp(confint(logit_age))
+
+# Sex model
+logit_sex <- glm(high_rate ~ SEX_CATEGORY, data = sex_data, family = binomial)
+summary(logit_sex)
+
+# Race model
+logit_race <- glm(high_rate ~ RACE_CATEGORY, data = race_data, family = binomial)
+summary(logit_race)
+
+# Virus model
+logit_virus <- glm(high_rate ~ VIRUS_TYPE, data = virus_data, family = binomial)
+summary(logit_virus)
+
+```
+
+### Establishing thresholds using MEM method
+
+The MEM model is a similar yet slightly more sophisticated version of the WHO method. It uses automated algorithms to identify epidemic periods. This method was established by Vega and Lozano in 2013 and has been used previously to establish epidemic thresholds in European countries \[7\]. There is an R package available to download with a reference manual which was referred to throughout this project \[8\].
 
 The MEM method has three main steps:
 
@@ -356,13 +691,13 @@ The MEM method has three main steps:
 
     -   This includes creating a threshold for each severity level (medium, high, very high).
 
-A few key differences from the WHO method including using the Maximum Accumulated Percentage (MAP) curve instead of arbitrary percentiles, as well as providing more intensity levels.
+A few key differences from the WHO method including using the Maximum Accumulated Percentage (MAP) curve instead of arbitrary percentiles, as well as providing more intensity levels \[11\].
 
 ```{r}
 
 ### Step 1: Prepping data in MEM Format 
 
-ILINet_clean_mem <- ILINet_clean_mem |>
+ILINet_clean_mem <- ILINet_clean |>
   filter(flu.season %in% c("2014/15", "2015/16", "2016/17", "2017/18", 
                            "2018/19", "2019/20", "2020/21", "2021/22", 
                            "2022/23", "2023/24"),
@@ -399,81 +734,156 @@ na_summary <- data.frame(
 na_summary  #there is no missing, so we can include all available seasons
 ```
 
-Now, we will run the MEM model. The majority of the MEM analysis uses the "memmodel()" function. This identifies epidemic periods for each season, calculated the pre- and post- epidemic thresholds, and calculates the intensity thresholds.
+To visualize the data, we can plot our ILI curves by season over CDC weeks. This will allow us to see if there are any outliers in our data.
 
 ```{r}
 
-#Step 2. Running the MEM Model 
+matplot(t(mem_data), type = "l", lty = 1, col = "gray",
+        xlab = "Week", ylab = "Percent ILI",
+        main = "ILI Curves by Season")
 
-#Here we are running the MEM model with default parameters 
-mem_results <- memmodel(
-  i.data = mem_data,        #input data for the model     
-  i.type.threshold = 1,     #calculating pre- and post- epidemic thresholds; option 1 is arithmetic mean 
-  i.level.threshold = 0.95,
-  i.tails.threshold = 1,  #uses 95th percentile of historical epidemic activity to set the threshold
-  i.type.intensity = 6,      #calculating how severe an ongoing flu season is; option 6 = geometric mean and SDs
-  i.level.intensity = c(0.50, 0.90, 0.975), 
-  #low intensity = below 50thth percentile 
-  #medium intensity = 40th-90th percentile 
-  #high intensity = 90th-97.5th percentile
-  #very high intensity = above 97.5th percentile 
-  i.tails.intensity = 1,     #no tail adjustment
-  i.type.curve = 2,          #normal curve
-  i.level.curve = 0.95,      #significance level for the epidemic curve fit
-  i.method = 1,              #estimation method for the epidemic threshold calculation = arithmetic/normal 
-  i.param = 2.5,             #controls shape or spread of epidemic curve
-  i.n.max = -1,              #consider all weeks  
-  i.type.boot = "norm",      #bootstrap distribution used to estimate CIs for thresholds and intensities = normal
-  i.iter.boot = 10000        #10,000 bootstrap iterations 
+```
+
+We can see that a few seasons have very sharp peaks, close to 7% ILI. This will be important to keep in mind as we determine parameters in the MEM model.
+
+Now, we will run the MEM model. The majority of the MEM analysis uses the "memmodel()" function. This identifies epidemic periods for each season, calculates the epidemic threshold, and calculates the intensity thresholds. A more detalied explanation of each parameter can be found in the MEM package manual \[8\].
+
+Any parameter ending in '.threshold' affects the epidemic threshold, and any parameter ending in '.intensity' affects the intensity levels. There are six parameter options for i.type.threshold and i.type.parameter. Vega et al. recommends using the geometric mean for both, but there is no 'best practice' and the choice for each parameter is data-specific. The national epidemic threshold for influenza during the 2023-24 season was 2.9% \[1\]. For this project, I tested each i.type.threshold option and chose the one which gave me an epidemic threshold closest to 2.9%. From there, I chose an i.type.parameter that did not give any intensities less than the epidemic threshold, and which had the most even spread. For all other parameters, I primarily chose those recommended by Vega et al.
+
+One other important parameter to mention is i.level.intensity. This parameter defines the percentiles used to classify the epidemic peak intensity into "medium", "high" and "very high". MEM uses historical peak values and then applies those percentile cutoffs.
+
+```{r}
+
+###Testing i.type.threshold###
+
+threshold_options <- 1:6
+
+mem_thresholds_results_list <- vector("list", length(threshold_options))
+
+for (i in seq_along(threshold_options)) {
+mem_thresholds_results_list[[i]] <- memmodel(
+i.data = mem_data,                     #input data
+i.type.threshold = threshold_options[i], #epidemic threshold method
+i.level.threshold = 0.95,              #95th percentile of historical activity
+i.tails.threshold = 1,                 
+i.type.intensity = 1,                  #intensity thresholds - this will not affect epidemic threshold measurement 
+i.level.intensity = c(0.75, 0.90, 0.975),
+i.tails.intensity = 1,                 #no tail adjustment
+i.type.curve = 2,                      #normal curve
+i.level.curve = 0.95,                  #significance level for curve fit
+i.method = 3,                          #moving percentile method (empirical percentiles)
+i.param = 2.5,                         #spread of epidemic curve
+i.n.max = -1,                          #all weeks considered
+i.type.boot = "norm",                  #bootstrap distribution for CIs
+i.iter.boot = 10000                    #10,000 bootstrap iterations
 )
+}
 
-mem_results
+mem_thresholds_results_list[[1]]
+mem_thresholds_results_list[[2]]
+mem_thresholds_results_list[[3]]
+mem_thresholds_results_list[[4]]
+mem_thresholds_results_list[[5]]
+mem_thresholds_results_list[[6]]
 
-### Step 2.5 Extract MEM Thresholds and Results 
 
-mem_thresholds <- data.frame(
-  threshold_type = c(
-    "Epidemic Threshold",
-    "Medium Intensity (50%)",
-    "High Intensity (90%)",
-    "Very High Intensity (97.5%)"
-  ),
-  value = c(
-    mem_results$epidemic.thresholds[1],  # Epidemic Threshold
-    mem_results$intensity.thresholds[1], # Medium
-    mem_results$intensity.thresholds[2], # High
-    mem_results$intensity.thresholds[3]  # Very High
-  )
+###Testing i.type.intensity###
+
+intensity_options <- 1:6
+
+mem_intensity_results_list <- vector("list", length(intensity_options))
+
+for (i in seq_along(threshold_options)) {
+mem_intensity_results_list[[i]] <- memmodel(
+i.data = mem_data,                     # input data
+i.type.threshold = 3,                  #chosen epidemic threshold method - this value will not affect intensity level measurements 
+i.level.threshold = 0.95,              #95th percentile of historical activity
+i.tails.threshold = 1,                 
+i.type.intensity = intensity_options[i],  #intensity thresholds
+i.level.intensity = c(0.75, 0.90, 0.975),
+i.tails.intensity = 1,                 #no tail adjustment
+i.type.curve = 2,                      #normal curve
+i.level.curve = 0.95,                  #significance level for curve fit
+i.method = 3,                          #moving percentile method (empirical percentiles)
+i.param = 2.5,                         #spread of epidemic curve
+i.n.max = -1,                          #all weeks considered
+i.type.boot = "norm",                  #bootstrap distribution for CIs
+i.iter.boot = 10000                    #10,000 bootstrap iterations
 )
+}
 
-mem_thresholds
+mem_intensity_results_list[[1]]
+mem_intensity_results_list[[2]]
+mem_intensity_results_list[[3]]
+mem_intensity_results_list[[4]]
+mem_intensity_results_list[[5]]
+mem_intensity_results_list[[6]]
+
 
 
 ```
 
-Vega et al. (2013) recommends using the geometric mean to calculate thresholds and intensities because epidemic peaks are inherently skewed. Here, a hybrid approach was used. The pre-epidemic thre
+| i.type.threshold parameter value | Epidemic Threshold (%) |
+|----------------------------------|------------------------|
+| 1 - arithmetic mean + CI         | 2.42                   |
+| 2 - geometric mean + CI          | 2.32                   |
+| **3 - median + CI**              | **2.63**               |
+| 4 - median + bootstrap-based CI  | 2.26                   |
+| 5 - arithmetic mean + "point" CI | 3.32                   |
+| 6 - geometric mean + "point" CI  | 3.6                    |
 
-Since here we are working with state level data, our percent ILI values are smaller. The geometric mean is sensitive to values near zero - which is why in this project the arithmetic mean was used for the epidemic threshold and the geometric mean was used for intensities. 
+| i.type.intensity parameter | Medium (75%) | High (90%) | Very High (97.5%) |
+|------------------|------------------|------------------|------------------|
+| 1 - arithmetic mean + CI | 2.49 | 2.63 | 2.79 |
+| 2 - Log-normal | 2.20 | 2.32 | 2.46 |
+| 3 - Empirical percentiles (nonparametric) | 2.26 | 2.27 | 2.35 |
+| 4 - Median + MAD (median absolute deviation) | 2.28 | 2.41 | 2.55 |
+| **5 - Empirical quantiles with smoothing** | **3.19** | **3.96** | **4.82** |
+| **6 - Bootstrap method** | **2.84** | **3.76** | **5.15** |
 
-When setting the intensity percentiles, we are telling the model to calculate the values based on those percentiles from our historical data. 
+Using the median + CI for i.type.threshold resulted in an epidemic threshold of 2.63%. With this value, method 5 and 6 resulted in meaningful i.type.intensity parameters. I decided to use method 5 for earlier detection during active flu season.
 
-For example, for the medium intensity, the model is looking at the epidemic peaks from the 9 historical seasons provided and calculating the 50th percentile of those peaks. 
+```{r}
 
-The mem model above provides an epidemic threshold, as well as three epidemic intensities. These percentages correspond to the percent of medical visits related to ILI diagnosis in any given week.
+#Establishing final model with chosen parameters
 
--   Epidemic Threshold: 2.06%
 
--   Medium Intensity: 2.45%
+mem_final <- memmodel(
+i.data = mem_data,                     #input data
+i.type.threshold = 3,                  #median + CI
+i.level.threshold = 0.95,              #95th percentile of historical activity
+i.tails.threshold = 1,                 
+i.type.intensity = 5,                  #empirical quantiles with smoothing 
+i.level.intensity = c(0.75, 0.90, 0.975),
+i.tails.intensity = 1,                 #no tail adjustment
+i.type.curve = 2,                      #normal curve
+i.level.curve = 0.95,                  #significance level for curve fit
+i.method = 3,                          #moving percentile method (empirical percentiles)
+i.param = 2.5,                         #spread of epidemic curve
+i.n.max = -1,                          #all weeks considered
+i.type.boot = "norm",                  #bootstrap distribution for CIs
+i.iter.boot = 10000                    #10,000 bootstrap iterations
+)
 
--   High Intensity: 4.17%
+mem_final
 
--   Very High Intensity: 5.50%
+```
+
+Here is the final epidemic threshold and intensity thresholds from the MEM model:
+
+-   Epidemic Threshold: 2.63%
+
+-   Medium Intensity: 3.19%
+
+-   High Intensity: 3.96%
+
+-   Very High Intensity: 4.82%
 
 ```{r}
 
 ###Step 3: Extracting Epidemic Timing 
-pre_epidemic_threshold <- mem_thresholds$value[1]
 
+pre_epidemic_threshold <- mem_final$epidemic.threshold[1]
 
 epidemic_timing <- mem_data |>
   as.data.frame() |>
@@ -527,22 +937,15 @@ epidemic_timing_table
 
 ```
 
-
 ```{r}
 
 ###Step 4: Visualizing MEM Results
 
-#Using built-in MEM plot
-png("mem_model_plot.png", width = 12, height = 8, units = "in", res = 300)
-plot(mem_results, main = "Pennsylvania Influenza Surveillance - MEM")
-
-
-#Creating more custom visualizations
 #reshaping data for plotting 
 mem_data_long <- ILINet_clean_mem |>
   filter(flu.season %in% rownames(mem_data)) |>
   mutate(
-    above_threshold = percent.ili >= mem_thresholds$value[1]
+    above_threshold = percent.ili >= mem_final$epidemic.threshold[1]
   ) |>
   # Join with epidemic timing to classify periods
   left_join(
@@ -567,31 +970,31 @@ plot_mem_all_seasons <- ggplot(mem_data_long,
   geom_point(aes(color = period), size = 1.5, alpha = 0.6) +
   
   # Add threshold lines
-  geom_hline(yintercept = mem_thresholds$value[1], 
+  geom_hline(yintercept = mem_final$epidemic.threshold[1], 
              color = "blue", linetype = "dashed", size = 1) +
-  geom_hline(yintercept = mem_thresholds$value[3], 
+  geom_hline(yintercept = mem_final$intensity.thresholds[1], 
              color = "yellow3", size = 0.8) +
-  geom_hline(yintercept = mem_thresholds$value[4], 
+  geom_hline(yintercept = mem_final$intensity.thresholds[2], 
              color = "orange", size = 0.8) +
-  geom_hline(yintercept = mem_thresholds$value[5], 
+  geom_hline(yintercept = mem_final$intensity.thresholds[3], 
              color = "red", size = 0.8) +
   
   # Add labels
   annotate("text", x = 30, 
-           y = mem_thresholds$value[1],
-           label = paste0("Pre-epidemic: ", round(mem_thresholds$value[1], 2), "%"),
+           y = mem_final$epidemic.threshold[1],
+           label = paste0("Epidemic Threshold: ", round(mem_final$epidemic.threshold[1], 2), "%"),
            vjust = -0.5, color = "blue", size = 3) +
   annotate("text", x = 30,
-           y = mem_thresholds$value[3],
-           label = paste0("Medium: ", round(mem_thresholds$value[3], 2), "%"),
+           y = mem_final$intensity.thresholds[1],
+           label = paste0("Medium: ", round(mem_final$intensity.thresholds[1], 2), "%"),
            vjust = -0.5, color = "yellow4", size = 3) +
   annotate("text", x = 30,
-           y = mem_thresholds$value[4],
-           label = paste0("High: ", round(mem_thresholds$value[4], 2), "%"),
+           y = mem_final$intensity.thresholds[2],
+           label = paste0("High: ", round(mem_final$intensity.thresholds[2], 2), "%"),
            vjust = -0.5, color = "orange", size = 3) +
   annotate("text", x = 30,
-           y = mem_thresholds$value[5],
-           label = paste0("Very High: ", round(mem_thresholds$value[5], 2), "%"),
+           y = mem_final$intensity.thresholds[3],
+           label = paste0("Very High: ", round(mem_final$intensity.thresholds[3], 2), "%"),
            vjust = -0.5, color = "red", size = 3) +
   
   scale_color_manual(
@@ -604,16 +1007,16 @@ plot_mem_all_seasons <- ggplot(mem_data_long,
   labs(
     title = "Pennsylvania Influenza Thresholds - MEM Method",
     subtitle = paste0("Based on ", length(unique(mem_data_long$flu.season)), " seasons"),
-    x = "Week in Season (Week 1 = CDC Week 40)",
+    x = "CDC Week",
     y = "Percent ILI (%)",
     color = "Epidemic Period"
   ) +
   theme(legend.position = "bottom")
 
 print(plot_mem_all_seasons)
+ggsave("plot_mem_all_seasons.png", plot = plot_mem_all_seasons)
 
 ```
-
 
 ```{r}
 
@@ -621,21 +1024,26 @@ print(plot_mem_all_seasons)
 
 #Classify each week to a threshold
 classification <- validation.season |>
+  filter(!is.na(percent.ili), !is.na(WEEK)) |>
   mutate(
     intensity_level = case_when(
-      percent.ili < mem_thresholds$value[1] ~ "Below Threshold",
-      percent.ili < mem_thresholds$value[3] ~ "Baseline",
-      percent.ili < mem_thresholds$value[4] ~ "Medium",
-      percent.ili < mem_thresholds$value[5] ~ "High",
-      percent.ili >= mem_thresholds$value[5] ~ "Very High",
+      percent.ili < mem_final$epidemic.threshold[1] ~ "Baseline",
+      percent.ili >= mem_final$epidemic.threshold[1] & percent.ili < mem_final$intensity.thresholds[1] ~ "Low",
+      percent.ili >= mem_final$intensity.thresholds[1] & percent.ili < mem_final$intensity.thresholds[2] ~ "Medium",
+      percent.ili >= mem_final$intensity.thresholds[2] & percent.ili < mem_final$intensity.thresholds[3] ~ "High",
+      percent.ili >= mem_final$intensity.thresholds[3] ~ "Very High",
       TRUE ~ "Unknown"
     ),
     intensity_level = factor(
       intensity_level,
-      levels = c("Below Threshold", "Baseline", "Medium", "High", "Very High")
+      levels = c("Baseline", "Low", "Medium", "High", "Very High")
     ),
-    above_epidemic_threshold = percent.ili >= mem_thresholds$value[1]
+    above_epidemic_threshold = percent.ili >= mem_final$epidemic.threshold[1],
+    WEEK = factor(WEEK, levels = c(40:53, 1:20))
   )
+
+classification <- classification |>
+  mutate(WEEK_num = as.numeric(WEEK))
 
 #Find epidemic alert
 first_alert <- classification |>
@@ -644,22 +1052,22 @@ first_alert <- classification |>
 
 ## Plot 2. Season 2024/25 With MEM Thresholds
 plot_season_2024_2025 <- ggplot(classification, 
-                           aes(x = week.in.season, y = percent.ili)) +
+                           aes(x = WEEK_num, y = percent.ili)) +
   # Shaded regions for intensity levels
   annotate("rect", xmin = -Inf, xmax = Inf,
-           ymin = 0, ymax = mem_thresholds$value[1],
+           ymin = 0, ymax = mem_final$epidemic.threshold[1],
            fill = "lightblue", alpha = 0.2) +
   annotate("rect", xmin = -Inf, xmax = Inf,
-           ymin = mem_thresholds$value[1], ymax = mem_thresholds$value[3],
+           ymin = mem_final$epidemic.threshold[1], ymax = mem_final$intensity.thresholds[1],
            fill = "lightgreen", alpha = 0.2) +
   annotate("rect", xmin = -Inf, xmax = Inf,
-           ymin = mem_thresholds$value[3], ymax = mem_thresholds$value[4],
+           ymin = mem_final$intensity.thresholds[1], ymax = mem_final$intensity.thresholds[2],
            fill = "yellow", alpha = 0.2) +
   annotate("rect", xmin = -Inf, xmax = Inf,
-           ymin = mem_thresholds$value[4], ymax = mem_thresholds$value[5],
+           ymin = mem_final$intensity.thresholds[2], ymax = mem_final$intensity.thresholds[3],
            fill = "orange", alpha = 0.2) +
   annotate("rect", xmin = -Inf, xmax = Inf,
-           ymin = mem_thresholds$value[5], ymax = Inf,
+           ymin = mem_final$intensity.thresholds[3], ymax = Inf,
            fill = "red", alpha = 0.2) +
   
   #Current season data
@@ -671,29 +1079,30 @@ plot_season_2024_2025 <- ggplot(classification,
             vjust = -1, size = 2.5, color = "gray30") +
   
   #Threshold lines
-  geom_hline(yintercept = mem_thresholds$value[1], 
+  geom_hline(yintercept = mem_final$epidemic.threshold[1], 
              color = "blue", linetype = "solid", size = 1) +
-  geom_hline(yintercept = mem_thresholds$value[3], 
+  geom_hline(yintercept = mem_final$intensity.thresholds[1], 
              color = "yellow3", linetype = "dashed") +
-  geom_hline(yintercept = mem_thresholds$value[4], 
+  geom_hline(yintercept = mem_final$intensity.thresholds[2], 
              color = "orange", linetype = "dashed") +
-  geom_hline(yintercept = mem_thresholds$value[5], 
+  geom_hline(yintercept = mem_final$intensity.thresholds[3], 
              color = "red", linetype = "dashed") +
+  
   scale_color_manual(
     values = c(
-      "Below Threshold" = "steelblue",
-      "Baseline" = "green4",
+      "Baseline" = "steelblue",
+      "Low" = "green4",
       "Medium" = "yellow3",
       "High" = "orange",
       "Very High" = "red"
     )
-  ) +
+) +
   
   theme_minimal() +
   labs(
     title = "2024/25 Pennsylvania Influenza Season - MEM",
-    subtitle = paste0("Epidemic threshold: ", round(mem_thresholds$value[1], 2), "% ILI"),
-    x = "Week in Season (Week 1 = CDC Week 40)",
+    subtitle = paste0("Epidemic threshold: ", round(mem_final$epidemic.threshold[1], 2), "% ILI"),
+    x = "WEEK",
     y = "Percent ILI (%)",
     color = "Intensity Level",
     caption = "Labels show CDC week numbers"
@@ -701,25 +1110,41 @@ plot_season_2024_2025 <- ggplot(classification,
   theme(legend.position = "bottom")
 
 print(plot_season_2024_2025)
+ggsave("plot_season_2024_2025.png", plot = plot_season_2024_2025)
 
 ```
 
-
-3\) Some type of sensitivity analysis of two methods
-
--   don't necessarily have reference data
-
 ## Conclusion
+
+-   connect different thresholds to specific interventions
+
+-   how do you decide what inputs to put into the model?
+
+    -   What are the optimal setting for this model?
+
+    -   How much thresholds might change based on changes in inputs?
+
+-   at what point have historical interventions been triggered?
+
+    -   try to tune the model to these interventions
+
+-   could create a vector of different inputs - loop that over
+
+    -   graph inputs versus thresholds
 
 This the conclusion. The @sec-results can be invoked here.
 
 ## References
 
 1.  CDC. U.S. Influenza Surveillance: Purpose and Methods. FluView. March 3, 2025. Accessed October 29, 2025. https://www.cdc.gov/fluview/overview/index.html
-2.  CDC. How CDC Classifies Flu Severity each Season in the United States. Influenza (Flu). November 26, 2024. Accessed October 28, 2025. https://www.cdc.gov/flu/php/surveillance/index.html
-3.  Tay EL, Grant K, Kirk M, Mounts A, Kelly H. Exploring a Proposed WHO Method to Determine Thresholds for Seasonal Influenza Surveillance. Cook AR, ed. *PLoS ONE*. 2013;8(10):e77244. doi:10.1371/journal.pone.0077244
-4.  *Global Epidemiological Surveillance Standards for Influenza*. World Health Organization; 2013.
-5.  Vega T, Lozano JE, Meerhoff T, et al. Influenza surveillance in Europe: establishing epidemic thresholds by the moving epidemic method. *Influenza Other Respir Viruses*. 2013;7(4):546-558. doi:10.1111/j.1750-2659.2012.00422.x
-6.  Lozano JE. mem: The Moving Epidemic Method. Published online November 26, 2010:2.19. doi:10.32614/CRAN.package.mem
-7.  CDC. Flu Season. Influenza (Flu). September 26, 2025. Accessed November 3, 2025. https://www.cdc.gov/flu/about/season.html
-8.  Steiner SH, Grant K, Coory M, Kelly HA. Detecting the start of an influenza outbreak using exponentially weighted moving average charts. *BMC Med Inform Decis Mak*. 2010;10(1):37. doi:10.1186/1472-6947-10-37
+2.  The burden of Influenza. Accessed November 26, 2025. https://www.who.int/news-room/feature-stories/detail/the-burden-of-influenza
+3.  CDC. Selecting Viruses for the Seasonal Influenza Vaccine. Influenza (Flu). August 28, 2025. Accessed November 26, 2025. https://www.cdc.gov/flu/vaccine-process/vaccine-selection.html
+4.  CDC. How CDC Classifies Flu Severity each Season in the United States. Influenza (Flu). November 26, 2024. Accessed October 28, 2025. https://www.cdc.gov/flu/php/surveillance/index.html
+5.  Tay EL, Grant K, Kirk M, Mounts A, Kelly H. Exploring a Proposed WHO Method to Determine Thresholds for Seasonal Influenza Surveillance. Cook AR, ed. *PLoS ONE*. 2013;8(10):e77244. doi:10.1371/journal.pone.0077244
+6.  *Global Epidemiological Surveillance Standards for Influenza*. World Health Organization; 2013.
+7.  Vega T, Lozano JE, Meerhoff T, et al. Influenza surveillance in Europe: establishing epidemic thresholds by the moving epidemic method. *Influenza Other Respir Viruses*. 2013;7(4):546-558. doi:10.1111/j.1750-2659.2012.00422.
+8.  Lozano JE. mem: The Moving Epidemic Method. Published online November 26, 2010:2.19. doi:10.32614/CRAN.package.mem
+9.  2026 ICD-10-CM Diagnosis Code J10.1: Influenza due to other identified influenza virus with other respiratory manifestations. Accessed November 26,
+    2025. https://www.icd10data.com/ICD10CM/Codes/J00-J99/J09-J18/J10-/J10.1
+10. CDC. Flu Season. Influenza (Flu). September 26, 2025. Accessed November 3, 2025. https://www.cdc.gov/flu/about/season.html
+11. Steiner SH, Grant K, Coory M, Kelly HA. Detecting the start of an influenza outbreak using exponentially weighted moving average charts. *BMC Med Inform Decis Mak*. 2010;10(1):37. doi:10.1186/1472-6947-10-37
