@@ -12,7 +12,7 @@ embed-resources: true
 
 ## Overview {#sec-overview}
 
-The goal of this project is to explore trends in seasonal influenza-like illness (ILI) cases. This includes overall case trends in Pennsylvania and the use of historical data to create seasonal influenza thresholds. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly ILI data at the state and regional level. The overall purpose of this project is to apply the threshold methods established in this project to Penn's own community, with the help of Sidney P and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness). They have provided guidance on data organization and visualization, as well as dissemination of results.
+The goal of this project is to explore trends in seasonal influenza-like illness (ILI) cases. This includes overall case trends in Pennsylvania and the use of historical data to create seasonal influenza thresholds. The data utilized will be from the CDC's FluVIew Interactive database \[1\]. This is an online tool that provides publicly available, weekly ILI data at the state and regional level. The overall purpose of this project is to apply the threshold methods established in this project to Penn's own community, with the help of Sidney P, MPH and Kendra T (Epidemiologist and Data Analyst on the Public Health team at Penn Wellness).
 
 [BMIN5030 Final Project GitHub Repository](https://github.com/HopeSch01/BMIN5030_Final_Project_Schreiber)
 
@@ -24,17 +24,15 @@ Another important influenza surveillance tool is the use of thresholds. To captu
 
 There is not a "gold standard" for calculating intensity thresholds, and multiple methods exist. In 2012, the World Health Organization (WHO) established a new method for defining flu thresholds \[5\]. It utilizes means and standard deviation from historical flu data, and the WHO released a standard guide for determining seasonal and alert thresholds \[6\]. Following the WHO method, the moving epidemic model (MEM) was established for calculating influenza intensity thresholds. It also uses historical data, but involves more statistics and relies heavily on consecutive seasons of data \[7\]. An R package has been created to guide MEM use \[8\].
 
-The CDC collaborates with state health departments and other clinical laboratories to maintain the U.S. influenza surveillance system \[1\]. Information on outpatient visits is reported by partners through the Influenza-like Illness Surveillance Network (ILINet) \[1\]. More than 110 million patient visits were reported during the 2022-23 season \[1\]. This is where the Public Health Team at Penn Wellness reports weekly ILI cases among students. With robust historical data available, seasonal flu thresholds can be established in Pennsylvannia to better understand current flu activity. This is a project that is rooted in the core epidemiological task of surveillance, but also includes statistical modeling skills and relevance to virology. Information from this project can help inform seasonal flu thresholds on UPenn's own campus. The Public Health Team at Penn Wellness collects weekly flu data, and maintains historical flu data spanning back to 2009. There is an opportunity for this project to have a real impact on our own campus community.
+The CDC collaborates with state health departments and other clinical laboratories to maintain the U.S. influenza surveillance system \[1\]. Information on outpatient visits is reported by partners through the Influenza-like Illness Surveillance Network (ILINet) \[1\]. More than 110 million patient visits were reported during the 2022-23 season \[1\]. This is where the Public Health Team at Penn Wellness reports weekly ILI cases among students. With robust historical data available, seasonal flu thresholds can be established in Pennsylvania to better understand current flu activity. This is a project that is rooted in the core epidemiological task of surveillance, but also includes statistical modeling skills and relevance to virology. Information from this project can help inform seasonal flu thresholds on UPenn's own campus. The Public Health Team at Penn Wellness collects weekly flu data, and maintains historical flu data spanning back to 2009. There is an opportunity for this project to have a real impact on our own campus community.
 
 ## Methods {#sec-methods}
 
-The data utilized for this project is from the U.S. influenza surveillance system (FluView) in collaboration with the CDC \[1\]. All data used in this project is at the state and regional level.
+The data utilized for this project is from the U.S. influenza surveillance system (FluView) in collaboration with the CDC \[1\]. All data used in this project is at the state level.
 
 There is an important distinction between an ILI case and a diagnosed influenza case. An ILI case is defined in this system as "a fever (temperature of 100°F \[37.8°C\] or greater) and a cough and/or sore throat. ILINet will capture any visit due to any respiratory pathogen that presents with this case definition. In medical records, this appears as diagnostic code J11.1. If a patient tests positive for Influenza A or Influenza B, they will receive a diagnostic code of J10.1 \[9\].
 
 In order to analyze case trends in Pennsylvania and create seasonal influenza thresholds, data specifically from ILINet was utilized. This includes information on outpatients visits to health care providers for respiratory illness. This setting most closely aligns to that of Penn students, which is why it was chosen for the threshold portion of this project.
-
-To explore the relationship between different demographic trends and Influenza more broadly, data at the regional level was analyzed. This includes information from 110 U.S. Influenza Collaborating Laboratories and 240 National Respiratory and Enteric Virus Surveillance System Laboratories \[1\]. This data set includes information on virus type, age, race, and sex.
 
 #### Loading and Cleaning Data
 
@@ -161,7 +159,6 @@ glimpse(ILINet_clean)
 
 The ILINet_clean dataframe has 9 variables and 520 rows of data. In this project, the variables primarily utilized will be WEEK, percent.ILI, flu.season, and week.in.season. The WEEK variable corresponds to CDC week. A typical flu season starts around CDC week 40, and ends around CDC week 20. This is why we re-ordered this variable earlier. We want to view figures starting at CDC week 40. The percent.ili variable provides the percent of medical visits related to an ILI diagnoses during any given week. It is the ILITOTAL variable divided by the TOTAL PATIENTS variable. We will define our flu thresholds and intensity levels using percent.ili.
 
-
 ## Results {#sec-results}
 
 #### Exploring Pennsylvania Historical ILI Case Trends
@@ -194,7 +191,8 @@ ggplot(ILINet_clean, aes(x = flu.season, y = WEEK, size = ILITOTAL)) +
 
 
 ```
-As seen in both figures, ILI cases typically peak at the very end and beginning of the year (November - February). We can also see the total number of cases differs drastically depending on the season. The 2017/18 season had an extremely high peak, and it can be seen that last flu season (2024/25) had a large peak around a similar time. Some flu seasons saw peaks earlier in the season, such as 2022/23 and 2023/24. Other seasons saw later peaks, such as 2019/20. 
+
+As seen in both figures, ILI cases typically peak at the very end and beginning of the year (November - February). We can also see the total number of cases differs drastically depending on the season. The 2017/18 season had an extremely high peak, and it can be seen that last flu season (2024/25) had a large peak around a similar time. Some flu seasons saw peaks earlier in the season, such as 2022/23 and 2023/24. Other seasons saw later peaks, such as 2019/20.
 
 ```{r}
 
@@ -208,10 +206,10 @@ summary(lm_rate_season)
 
 
 ```
-It can be seen that ILI rates increase over the season, peaking around week 53, and then start to decrease around week 13. This aligns with what we saw in the previous figures. 
 
-Comparing flu seasons, the ILI rate in PA does not generally differ significantly from the 2014/15 season, except for 2021/22, which had a significantly lower ILI rate. 
+It can be seen that ILI rates increase over the season, peaking around week 53, and then start to decrease around week 13. This aligns with what we saw in the previous figures.
 
+Comparing flu seasons, the ILI rate in PA does not generally differ significantly from the 2014/15 season, except for 2021/22, which had a significantly lower ILI rate.
 
 ```{r}
 
@@ -266,6 +264,7 @@ ggplot(ILI_map_data) +
   )
 
 ```
+
 This figure shows the change in percent ILI from 2014/15 to 2024/25. There does not appear to be any strong geographic trends in change in percent ILI. For PA specifically, we see very little change. States along the western coast appear to have a greater change in percent ILI, as well as many states in the southeast.
 
 ### Establishing thresholds using MEM method
@@ -338,7 +337,7 @@ matplot(t(mem_data), type = "l", lty = 1, col = "gray",
 
 We can see that a few seasons have very sharp peaks, close to 7% ILI. This will be important to keep in mind as we determine parameters in the MEM model.
 
-Now, we will run the MEM model. The majority of the MEM analysis uses the "memmodel()" function. This identifies epidemic periods for each season, calculates the epidemic threshold, and calculates the intensity thresholds. A more detalied explanation of each parameter can be found in the MEM package manual \[8\].
+Now, we will run the MEM model. The majority of the MEM analysis uses the "memmodel()" function. This identifies epidemic periods for each season, calculates the epidemic threshold, and calculates the intensity thresholds. A more detailed explanation of each parameter can be found in the MEM package manual \[8\].
 
 Any parameter ending in '.threshold' affects the epidemic threshold, and any parameter ending in '.intensity' affects the intensity levels. There are six parameter options for i.type.threshold and i.type.parameter. Vega et al. recommends using the geometric mean for both, but there is no 'best practice' and the choice for each parameter is data-specific. The national epidemic threshold for influenza during the 2023-24 season was 2.9% \[1\]. For this project, I tested each i.type.threshold option and chose the one which gave me an epidemic threshold closest to 2.9%. From there, I chose an i.type.parameter that did not give any intensities less than the epidemic threshold, and which had the most even spread. For all other parameters, I primarily chose those recommended by Vega et al.
 
@@ -538,7 +537,7 @@ epidemic_timing_table
 
 ```
 
-The epidemic_timing_table provides all of the information for visualizing our MEM. We can see there is some variability in the duration of "epidemic" influenza activity for each season, though most seasons reach the epidemic threshold around the same time. 
+The epidemic_timing_table provides all of the information for visualizing our MEM. We can see there is some variability in the duration of "epidemic" influenza activity for each season, though most seasons reach the epidemic threshold around the same time.
 
 ```{r}
 
@@ -608,6 +607,7 @@ print(plot_mem_all_seasons)
 ggsave("plot_mem_all_seasons.png", plot = plot_mem_all_seasons)
 
 ```
+
 This figure shows the established epidemic threshold and intensity thresholds plotted on the nine historical influenza seasons used to derive those values. Percent ILI is on the y-axis, and CDC week is on the x-axis. All blue points are CDC weeks below the epidemic threshold, and all red points are CDC weeks above the epidemic threshold. Again, we can see that trends in peaks vary across seasons, but we see similar rises and falls in the beginning and end of each season.
 
 ```{r}
@@ -705,14 +705,14 @@ print(plot_season_2024_2025)
 ggsave("plot_season_2024_2025.png", plot = plot_season_2024_2025)
 
 ```
-Finally, this figure shows the established epidemic threshold and intensity levels on our "current" influenza season, which in this case is 2024/25. The x-axis shows "week in season", while each point is labeled with the specific CDC week. Percent ILI is again on the y-axis. The the blue line shows the epidemic threshold of 2.63% ILI. We can clearly see that active flu season ("epidemic") starts right after week 51, and ends right around week 11. There was very high ILI activity during weeks 5, 6, and 7. 
+
+Finally, this figure shows the established epidemic threshold and intensity levels on our "current" influenza season, which in this case is 2024/25. The x-axis shows "week in season", while each point is labeled with the specific CDC week. Percent ILI is again on the y-axis. The the blue line shows the epidemic threshold of 2.63% ILI. We can clearly see that active flu season ("epidemic") starts right after week 51, and ends right around week 11. There was very high ILI activity during weeks 5, 6, and 7.
 
 ## Conclusion
 
-Overall, the MEM is a very useful tool that can be implemented at Penn Wellness to better understand influenza activity on Penn's own campus. The main limitation with this model is deciding which parameter settings work best with the available data. In my future implementation of this work, I plan to include some sensitivity analyses to better decide which parameters align the closest with my data. 
+Overall, the MEM is a very useful tool that can be implemented at Penn Wellness to better understand influenza activity on Penn's own campus. The main limitation with this model is deciding which parameter settings work best with the available data. In my future implementation of this work, I plan to include some sensitivity analyses to better decide which parameters align the closest with my data.
 
-On a broader scale, epidemic thresholds and intensity levels can be used to more accurately inform public health interventions. Certain interventions could be triggered by reaching specific thresholds/intensities. This allows for a more robust and data-driven approach to responding to seasonal influenza outbreaks.  
-
+On a broader scale, epidemic thresholds and intensity levels can be used to more accurately inform public health interventions. Certain interventions could be triggered by reaching specific thresholds/intensities. This allows for a more robust and data-driven approach to responding to seasonal influenza outbreaks.
 
 ## References
 
